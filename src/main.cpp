@@ -1,5 +1,9 @@
-#include <iostream>
+#include "includes.h"
 
 int main() {
-    std::cout << "Hello world!" << std::endl;
+    srand(time(0));
+    std::string input;
+    std::cin >> input;
+
+    if (input == "ugi") UGI();
 }
