@@ -39,4 +39,24 @@ struct MovePicker {
         curr++;
         return true;
     }
+
+    bool nextCapture(chess::Move &move, chess::Board &b) {
+        if(curr == moves.size()) return false;
+        
+        int bestMoveIdx = -1;
+        int bestMoveValue = INT32_MIN;
+
+        for(int i = curr; i < moves.size(); i++) {
+            if(b.at(moves[i].to()) != chess::Piece::None && moves[i].score > bestMoveValue) {
+                bestMoveIdx = i;
+                bestMoveValue = moves[i].score;
+            }
+        }
+        if(bestMoveIdx == -1) return false;
+
+        move = moves[bestMoveIdx];
+        std::swap(moves[curr], moves[bestMoveIdx]);
+        curr++;
+        return true;
+    }
 };
