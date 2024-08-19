@@ -61,7 +61,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV 
     }
 
     // If the position is not game over, we check the base case (this is a recursive algorithm after all)
-    if(depth <= 0 || ply > MAX_PLY) return eval(position);
+    if(depth <= 0 || ply > MAX_PLY) return QSearch(position, alpha, beta, ply, nodes);
 
     // Next we check if the time is up
     if(settings.stop == StopType::Time && std::chrono::high_resolution_clock::now() >= settings.endTime) {
@@ -115,4 +115,36 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV 
     }
 
     return bestMoveValue;
+}
+
+int QSearch(chess::Board &position, int alpha, int beta, int ply, uint64_t &nodes) {
+    if(position.isGameOver() != chess::GameResult::NONE) {
+        if(position.isGameOver() == chess::GameResult::WIN) return MATE - ply;
+        if(position.isGameOver() == chess::GameResult::LOSE) return -(MATE - ply);
+        return 0;
+    }
+
+    int static_eval = eval(position);
+    if(static_eval >= beta) return static_eval;
+    alpha = std::max(alpha, static_eval);
+
+    MovePicker moves(position);
+    chess::Move move;
+
+    while(moves.nextCapture(move, position)) {
+        chess::Board newPosition = position;
+        newPosition.makeMove(move);
+        nodes++;
+        int value;
+
+        if(newPosition.sideToMove() != position.sideToMove()) {
+            value = -QSearch(newPosition, -beta, -alpha, ply + 1, nodes);
+        } else {
+            value = QSearch(newPosition, alpha, beta, ply + 1, nodes);
+        }
+
+        if(value >= beta) return beta;
+        if(value > alpha) alpha = value;
+    }
+    return alpha;
 }
