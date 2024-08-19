@@ -21,7 +21,7 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
     while(true) {
         PV newPV;
         
-        int result = Negamax(position, depth, 0, newPV, settings, nodes);
+        int result = Negamax(position, depth, 0, -INF, INF, newPV, settings, nodes);
 
         if(!settings.timeout) {
             bestPV = newPV;
@@ -51,7 +51,7 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
     return bestPV.moves[0];
 }
 
-int Negamax(chess::Board &position, int depth, int ply, PV &pv, SearchSettings &settings, uint64_t &nodes) {
+int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV &pv, SearchSettings &settings, uint64_t &nodes) {
     // Step one is to check if the game is over. This is fast and perfectly accurate so we do it first
     if(position.isGameOver() != chess::GameResult::NONE) {
         if(position.isGameOver() == chess::GameResult::WIN) return MATE - ply;
@@ -90,9 +90,9 @@ int Negamax(chess::Board &position, int depth, int ply, PV &pv, SearchSettings &
         nodes++;
 
         if(newPosition.sideToMove() != position.sideToMove()) {
-            result = -Negamax(newPosition, depth - 1, ply + 1, newPV, settings, nodes);
+            result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, newPV, settings, nodes);
         } else {
-            result = Negamax(newPosition, depth - 1, ply + 1, newPV, settings, nodes);
+            result = Negamax(newPosition, depth - 1, alpha, beta, ply + 1, newPV, settings, nodes);
         }
 
         if(settings.timeout) return 0;
@@ -107,6 +107,8 @@ int Negamax(chess::Board &position, int depth, int ply, PV &pv, SearchSettings &
                 pv.moves.insert(pv.moves.end(), newPV.moves.begin(), newPV.moves.end());
             }
             bestMoveValue = result;
+            alpha = std::max(alpha, bestMoveValue);
+            if(alpha >= beta) break;
         }
     }
 

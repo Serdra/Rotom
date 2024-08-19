@@ -32,5 +32,5 @@ chess::Move IterativeDeepening(
 );
 
 int Negamax(
-    chess::Board &position, int depth, int ply, PV &pv, SearchSettings &settings, uint64_t &nodes
+    chess::Board &position, int depth, int alpha, int beta, int ply, PV &pv, SearchSettings &settings, uint64_t &nodes
 );
