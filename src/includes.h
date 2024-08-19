@@ -8,4 +8,9 @@
 #include "PokeChess/PokeChess.h"
 using namespace pokechess;
 
+#include "Eval.h"
+
+#include "Search.h"
+#include "Search.cpp"
+
 #include "UGI.cpp"

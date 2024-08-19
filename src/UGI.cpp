@@ -79,9 +79,63 @@ void UGI() {
         }
 
         else if(split[0] == "go") {
-            chess::Movelist legalMoves;
-            chess::legalmoves(legalMoves, pos);
-            std::cout << "bestmove " << legalMoves[rand() % legalMoves.size()] << std::endl;
+            int timeRemaining = -1;
+            int incTime = -1;
+            int mTime = -1;
+            int depth = -1;
+            int nodes = -1;
+            StopType stopType = StopType::Infinite;
+
+            int i = 1;
+            while(split.size() > i) {
+                if(split[i] == "p1time" && pos.sideToMove() == chess::Color::White) {
+                    timeRemaining = std::stoi(split[i + 1]);
+                    stopType = StopType::Time;
+                }
+                else if(split[i] == "p2time" && pos.sideToMove() == chess::Color::Black) {
+                    timeRemaining = std::stoi(split[i + 1]);
+                    stopType = StopType::Time;
+                }
+                else if(split[i] == "p1inc" && pos.sideToMove() == chess::Color::White) {
+                    incTime = std::stoi(split[i + 1]);
+                    stopType = StopType::Time;
+                }
+                else if(split[i] == "p2inc" && pos.sideToMove() == chess::Color::Black) {
+                    incTime = std::stoi(split[i + 1]);
+                    stopType = StopType::Time;
+                }
+
+                else if(split[i] == "nodes") {
+                    nodes = std::stoi(split[i + 1]);
+                    stopType = StopType::Nodes;
+                }
+
+                else if(split[i] == "time" || split[i] == "movetime") {
+                    mTime = std::stoi(split[i + 1]);
+                    stopType = StopType::Time;
+                }
+
+                else if(split[i] == "depth") {
+                    depth = std::stoi(split[i + 1]);
+                    stopType = StopType::Depth;
+                }
+                i++;
+            }
+
+            chess::Move bestMove;
+
+            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0);
+            if(stopType == StopType::Time) {
+                if(mTime == -1) {
+                    bestMove = IterativeDeepening(pos, stopType, std::min(timeRemaining / 2, (timeRemaining / 30) + incTime));
+                } else {
+                    bestMove = IterativeDeepening(pos, stopType, mTime);
+                }
+            }
+            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes);
+            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth);
+
+            std::cout << "bestmove " << bestMove << std::endl;
         }
 
         else if(split[0] == "quit") {
