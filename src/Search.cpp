@@ -73,20 +73,21 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV 
         return 0;
     }
 
-    chess::Movelist Moves;
-    chess::legalmoves(Moves, position);
+    // Searches each move in turn
+    MovePicker moves(position);
+    chess::Move move;
 
     int result;
     int bestMoveValue = -INF;
 
-    for(int i = 0; i < Moves.size(); i++) {
+    while(moves.next(move, position)) {
 
         // We create a new PV from this position so that only the best PV is continued
         PV newPV;
 
         // I prefer copy-make to make-unmake
         chess::Board newPosition = position;
-        newPosition.makeMove(Moves[i]);
+        newPosition.makeMove(move);
 
         nodes++;
 
@@ -101,7 +102,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV 
         if(result > bestMoveValue) {
             // Update the PV
             pv.moves.clear();
-            pv.moves.push_back(Moves[i]);
+            pv.moves.push_back(move);
 
             // If there is a continuation after the bestmove, update it
             if(newPV.moves.size() != 0) {

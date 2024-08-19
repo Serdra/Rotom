@@ -11,6 +11,8 @@ using namespace pokechess;
 #include "Eval.h"
 #include "Eval.cpp"
 
+#include "Movepicker.cpp"
+
 #include "Search.h"
 #include "Search.cpp"
 
