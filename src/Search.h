@@ -28,11 +28,11 @@ struct SearchSettings {
 };
 
 chess::Move IterativeDeepening(
-    chess::Board position, StopType stop, int stopValue
+    chess::Board position, StopType stop, int stopValue, TransTable &TT
 );
 
 int Negamax(
-    chess::Board &position, int depth, int alpha, int beta, int ply, PV &pv, SearchSettings &settings, uint64_t &nodes
+    chess::Board &position, int depth, int alpha, int beta, int ply, PV &pv, SearchSettings &settings, TransTable &TT, uint64_t &nodes
 );
 
 int QSearch(
