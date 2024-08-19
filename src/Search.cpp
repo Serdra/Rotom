@@ -21,11 +21,10 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
     while(true) {
         PV newPV;
         
-        int result = Negamax(position, depth, 0, -INF, INF, newPV, settings, nodes);
+        int result = Negamax(position, depth, -INF, INF, 0, newPV, settings, nodes);
 
         if(!settings.timeout) {
             bestPV = newPV;
-            depth++;
 
             if(printSearchUpdates) {
                 auto elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -46,6 +45,8 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
         if(stop == StopType::Nodes && nodes >= stopValue) break;
         if(stop == StopType::Depth && depth >= stopValue) break;
         if(depth > MAX_DEPTH) break;
+
+        depth++;
     }
 
     return bestPV.moves[0];
@@ -107,9 +108,9 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV 
                 pv.moves.insert(pv.moves.end(), newPV.moves.begin(), newPV.moves.end());
             }
             bestMoveValue = result;
-            alpha = std::max(alpha, bestMoveValue);
-            if(alpha >= beta) break;
         }
+        alpha = std::max(alpha, bestMoveValue);
+        if(alpha >= beta) break;
     }
 
     return bestMoveValue;
