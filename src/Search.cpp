@@ -1,6 +1,6 @@
 #include "includes.h"
 
-chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopValue, TransTable &TT) {
+std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int stopValue, TransTable &TT) {
     auto start = std::chrono::high_resolution_clock::now();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> endTime;
@@ -17,6 +17,7 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
     uint64_t nodes = 0;
 
     PV bestPV;
+    int evaluation;
 
     while(true) {
         PV newPV;
@@ -25,6 +26,7 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
 
         if(!settings.timeout) {
             bestPV = newPV;
+            evaluation = result;
 
             if(printSearchUpdates) {
                 auto elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -49,7 +51,7 @@ chess::Move IterativeDeepening(chess::Board position, StopType stop, int stopVal
         depth++;
     }
 
-    return bestPV.moves[0];
+    return {bestPV.moves[0], evaluation};
 }
 
 int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV &pv, SearchSettings &settings, TransTable &TT, uint64_t &nodes) {

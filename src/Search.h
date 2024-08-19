@@ -27,7 +27,7 @@ struct SearchSettings {
     bool timeout = false; 
 };
 
-chess::Move IterativeDeepening(
+std::pair<chess::Move, int> IterativeDeepening(
     chess::Board position, StopType stop, int stopValue, TransTable &TT
 );
 
