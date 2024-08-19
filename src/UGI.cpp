@@ -1,6 +1,8 @@
 #include "includes.h"
 
 void UGI() {
+    int hashSize = 16;
+
     std::string command;
 
     std::cout << "id name Rotom" << std::endl;
@@ -17,8 +19,20 @@ void UGI() {
             std::cout << "readyok" << std::endl;
             break;
         }
+        else if (split[0] == "setoption") {
+            if(split.size() != 5) continue; 
+            if(split[1] != "name") continue;
+            if(split[3] != "value") continue;
+
+            // Control options here
+            if(split[2] == "hash" || split[2] == "Hash") {
+                hashSize = std::stoi(split[4]);
+            }
+        }
+        else if(split[0] == "quit") return;
     }
 
+    TransTable TT(hashSize);
     chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
     while(true) {
         if(!getline(std::cin, command)) return;
@@ -124,16 +138,16 @@ void UGI() {
 
             chess::Move bestMove;
 
-            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0);
+            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0, TT);
             if(stopType == StopType::Time) {
                 if(mTime == -1) {
-                    bestMove = IterativeDeepening(pos, stopType, std::min(timeRemaining / 2, (timeRemaining / 30) + incTime));
+                    bestMove = IterativeDeepening(pos, stopType, std::min(timeRemaining / 2, (timeRemaining / 30) + incTime), TT);
                 } else {
-                    bestMove = IterativeDeepening(pos, stopType, mTime);
+                    bestMove = IterativeDeepening(pos, stopType, mTime, TT);
                 }
             }
-            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes);
-            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth);
+            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes, TT);
+            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth, TT);
 
             std::cout << "bestmove " << bestMove << std::endl;
         }

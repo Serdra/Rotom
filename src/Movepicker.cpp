@@ -6,6 +6,8 @@ int SEScore[] = {0, 36, 72, 108};
 int targetScore[] = {0, 6, 12, 18, 24, 30};
 int attackerScore[] = {5, 4, 3, 2, 1, 0};
 
+int TTScore = 10'000;
+
 int scoreCapture(chess::Move move, chess::Board &position) {
     return 
         attackerScore[(int)position.at(move.from()) % 6] + 
@@ -21,6 +23,15 @@ struct MovePicker {
         chess::legalmoves(moves, b);
         for(int i = 0; i < moves.size(); i++) {
             if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Quiet_Score;
+            else moves[i].score = scoreCapture(moves[i], b);
+        }
+    }
+
+    MovePicker(chess::Board &b, chess::Move ttMove) {
+        chess::legalmoves(moves, b);
+        for(int i = 0; i < moves.size(); i++) {
+            if(moves[i] == ttMove) moves[i].score = TTScore;
+            else if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Quiet_Score;
             else moves[i].score = scoreCapture(moves[i], b);
         }
     }

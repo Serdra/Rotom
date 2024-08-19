@@ -13,6 +13,8 @@ using namespace pokechess;
 
 #include "Movepicker.cpp"
 
+#include "TT.cpp"
+
 #include "Search.h"
 #include "Search.cpp"
 
