@@ -95,12 +95,29 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, PV 
 
         nodes++;
 
-        if(newPosition.sideToMove() != position.sideToMove()) {
-            result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, newPV, settings, TT, nodes);
+        // We only do a full width search on the first move by default
+        // All other moves are assumed to be significantly worse and we do a zero width search instead
+        // If that search fails high, then we do a full width search
+        if(moves.curr == 1) {
+            if(newPosition.sideToMove() != position.sideToMove()) {
+                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, newPV, settings, TT, nodes);
+            } else {
+                result = Negamax(newPosition, depth - 1, alpha, beta, ply + 1, newPV, settings, TT, nodes);
+            }
         } else {
-            result = Negamax(newPosition, depth - 1, alpha, beta, ply + 1, newPV, settings, TT, nodes);
+            if(newPosition.sideToMove() != position.sideToMove()) {
+                result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, newPV, settings, TT, nodes);
+            } else {
+                result = Negamax(newPosition, depth - 1, alpha, alpha+1, ply + 1, newPV, settings, TT, nodes);
+            }
+            if(result > alpha && result < beta) {
+                if(newPosition.sideToMove() != position.sideToMove()) {
+                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, newPV, settings, TT, nodes);
+                } else {
+                    result = Negamax(newPosition, depth - 1, alpha, beta, ply + 1, newPV, settings, TT, nodes);
+                }
+            }
         }
-
         if(settings.timeout) return 0;
 
         if(result > bestMoveValue) {
