@@ -32,7 +32,7 @@ std::pair<chess::Move, int> IterativeDeepening(
 );
 
 int Negamax(
-    chess::Board &position, int depth, int alpha, int beta, int ply, PV &pv, SearchSettings &settings, TransTable &TT, uint64_t &nodes
+    chess::Board &position, int depth, int alpha, int beta, int ply, bool isPV, PV &pv, SearchSettings &settings, TransTable &TT, uint64_t &nodes
 );
 
 int QSearch(
