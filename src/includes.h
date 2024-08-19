@@ -9,6 +9,7 @@
 using namespace pokechess;
 
 #include "Eval.h"
+#include "Eval.cpp"
 
 #include "Search.h"
 #include "Search.cpp"
