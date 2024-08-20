@@ -6,6 +6,9 @@ const int MAX_PLY = 256;
 const int INF = 999999;
 const int MATE = 10256;
 
+const float SOFT_LIMIT_MULT = 0.68;
+const float HARD_LIMIT_MULT = 1.32;
+
 bool printSearchUpdates = true;
 
 // Reasons to terminate the search
