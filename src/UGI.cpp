@@ -7,6 +7,7 @@ void UGI() {
 
     std::cout << "id name Rotom" << std::endl;
     std::cout << "id author Serdra" << std::endl;
+    std::cout << "option name hash type spin default 16" << std::endl;
     std::cout << "ugiok" << std::endl;
 
     // Deals with option setting
