@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cassert>
+#include <array>
 
 namespace pokechess {
 
