@@ -20,10 +20,19 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     PV bestPV;
     int evaluation;
 
+    int result;
+
     while(true) {
         PV newPV;
         
-        int result = Negamax(position, depth, -INF, INF, 0, true, newPV, settings, TT, nodes);
+        if(depth == 1) 
+            result = Negamax(position, depth, -INF, +INF, 0, true, newPV, settings, TT, nodes);
+        else {
+            result = Negamax(position, depth, evaluation - 30, evaluation + 30, 0, true, newPV, settings, TT, nodes);
+            if(result <= (evaluation - 30) || result >= (evaluation + 30)) {
+                result = Negamax(position, depth, -INF, +INF, 0, true, newPV, settings, TT, nodes);
+            }
+        }
 
         if(!settings.timeout) {
             bestPV = newPV;
