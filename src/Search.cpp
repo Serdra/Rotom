@@ -17,25 +17,25 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     int depth = 1;
     uint64_t nodes = 0;
 
-    PV bestPV;
     int evaluation;
-
     int result;
 
+    Stack stack[256];
+
+    chess::Move previousBestMove;
+
     while(true) {
-        PV newPV;
-        
         if(depth == 1) 
-            result = Negamax(position, depth, -INF, +INF, 0, true, newPV, settings, TT, nodes);
+            result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, nodes);
         else {
-            result = Negamax(position, depth, evaluation - 30, evaluation + 30, 0, true, newPV, settings, TT, nodes);
+            result = Negamax(position, depth, evaluation - 30, evaluation + 30, 0, stack, settings, TT, nodes);
             if(result <= (evaluation - 30) || result >= (evaluation + 30)) {
-                result = Negamax(position, depth, -INF, +INF, 0, true, newPV, settings, TT, nodes);
+                result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, nodes);
             }
         }
 
         if(!settings.timeout) {
-            bestPV = newPV;
+            previousBestMove = stack[0].pv.moves[0];
             evaluation = result;
 
             if(printSearchUpdates) {
@@ -46,7 +46,7 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
                 std::cout << " time " << u << " nodes " << nodes;
                 if(u >= 2) std::cout << " nps " << (int)(nodes / (u / 1000.f));
                 std::cout << " pv ";
-                for(auto move : bestPV.moves) std::cout << move << " ";
+                for(auto move : stack[0].pv.moves) std::cout << move << " ";
                 std::cout << std::endl;
             }
         }
@@ -61,10 +61,10 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
         depth++;
     }
 
-    return {bestPV.moves[0], evaluation};
+    return {previousBestMove, evaluation};
 }
 
-int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, bool isPV, PV &pv, SearchSettings &settings, TransTable &TT, uint64_t &nodes) {
+int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, uint64_t &nodes) {
     // Step one is to check if the game is over. This is fast and perfectly accurate so we do it first
     if(position.isGameOver() != chess::GameResult::NONE) {
         if(position.isGameOver() == chess::GameResult::WIN) return MATE - ply;
@@ -76,9 +76,9 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
     if(depth <= 0 || ply > MAX_PLY) return QSearch(position, alpha, beta, ply, nodes);
 
     TTEntry entry = TT.probe(position.hash());
-    if(entry.hash == position.hash() && entry.depth >= depth && !isPV) {
+    if(entry.hash == position.hash() && entry.depth >= depth && !stack[ply].isPV) {
         if(entry.flag == TTFlags::Exact) {
-            pv.moves.push_back(entry.bestMove);
+            stack[ply].pv.moves.push_back(entry.bestMove);
             return entry.score;
         }
         if(entry.flag == TTFlags::Upper) {
@@ -89,7 +89,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
         }
 
         if(alpha >= beta) {
-            pv.moves.push_back(entry.bestMove);
+            stack[ply].pv.moves.push_back(entry.bestMove);
             return entry.score;
         }
     }
@@ -113,10 +113,6 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
     int alphaOrig = alpha;
 
     while(moves.next(move, position)) {
-
-        // We create a new PV from this position so that only the best PV is continued
-        PV newPV;
-
         // I prefer copy-make to make-unmake
         chess::Board newPosition = position;
         newPosition.makeMove(move);
@@ -124,25 +120,29 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
         nodes++;
 
         // We only do a full width search on the first move by default
-        // All other moves are assumed to be significantly worse and we do a zero width search instead
+        // All other moves are assumed to be worse and we do a zero width search instead
         // If that search fails high, then we do a full width search
         if(moves.curr == 1) {
+            stack[ply].isPV = true;
+
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, true, newPV, settings, TT, nodes);
+                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, nodes);
             } else {
-                result = Negamax(newPosition, depth, alpha, beta, ply + 1, true, newPV, settings, TT, nodes);
+                result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, nodes);
             }
         } else {
+            stack[ply].isPV = false;
+
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, false, newPV, settings, TT, nodes);
+                result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, nodes);
             } else {
-                result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, false, newPV, settings, TT, nodes);
+                result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, nodes);
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {
-                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, false, newPV, settings, TT, nodes);
+                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, nodes);
                 } else {
-                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, false, newPV, settings, TT, nodes);
+                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, nodes);
                 }
             }
         }
@@ -150,12 +150,12 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
 
         if(result > bestMoveValue) {
             // Update the PV
-            pv.moves.clear();
-            pv.moves.push_back(move);
+            stack[ply].pv.moves.clear();
+            stack[ply].pv.moves.push_back(move);
 
             // If there is a continuation after the bestmove, update it
-            if(newPV.moves.size() != 0) {
-                pv.moves.insert(pv.moves.end(), newPV.moves.begin(), newPV.moves.end());
+            if(stack[ply+1].pv.moves.size() != 0) {
+                stack[ply].pv.moves.insert(stack[ply].pv.moves.end(), stack[ply+1].pv.moves.begin(), stack[ply+1].pv.moves.end());
             }
             bestMoveValue = result;
         }
@@ -164,7 +164,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
     }
     
     entry.hash = position.hash();
-    if(pv.moves.size() != 0) entry.bestMove = pv.moves[0];
+    if(stack[ply].pv.moves.size() != 0) entry.bestMove = stack[ply].pv.moves[0];
     entry.score = bestMoveValue;
     entry.depth = depth;
 
