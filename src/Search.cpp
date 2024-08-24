@@ -130,19 +130,19 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, boo
             if(newPosition.sideToMove() != position.sideToMove()) {
                 result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, true, newPV, settings, TT, nodes);
             } else {
-                result = Negamax(newPosition, depth - 1, alpha, beta, ply + 1, true, newPV, settings, TT, nodes);
+                result = Negamax(newPosition, depth, alpha, beta, ply + 1, true, newPV, settings, TT, nodes);
             }
         } else {
             if(newPosition.sideToMove() != position.sideToMove()) {
                 result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, false, newPV, settings, TT, nodes);
             } else {
-                result = Negamax(newPosition, depth - 1, alpha, alpha+1, ply + 1, false, newPV, settings, TT, nodes);
+                result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, false, newPV, settings, TT, nodes);
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {
                     result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, false, newPV, settings, TT, nodes);
                 } else {
-                    result = Negamax(newPosition, depth - 1, alpha, beta, ply + 1, false, newPV, settings, TT, nodes);
+                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, false, newPV, settings, TT, nodes);
                 }
             }
         }
