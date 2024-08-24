@@ -59,3 +59,10 @@ SPRT: llr 2.95, lbound -2.94, ubound 2.94
 Score of Rotom-Dev vs Rotom-Master: 4031 - 3780 - 619 [0.515] 8430
 10.35 +/- 7.13
 SPRT: llr 2.95, lbound -2.94, ubound 2.94
+
+
+0.8.2 Aspiration Windows
+
+Score of Rotom-Dev vs Rotom-Master: 5956 - 5675 - 926 [0.511] 12557
+7.78 +/- 5.84
+SPRT: llr 2.95, lbound -2.94, ubound 2.94
