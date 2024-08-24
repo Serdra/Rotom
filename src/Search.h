@@ -30,12 +30,18 @@ struct SearchSettings {
     bool timeout = false; 
 };
 
+struct Stack {
+    bool isPV = true;
+    bool canDoNullMove = true;
+    PV pv;
+};
+
 std::pair<chess::Move, int> IterativeDeepening(
     chess::Board position, StopType stop, int stopValue, TransTable &TT
 );
 
 int Negamax(
-    chess::Board &position, int depth, int alpha, int beta, int ply, bool isPV, PV &pv, SearchSettings &settings, TransTable &TT, uint64_t &nodes
+    chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, uint64_t &nodes
 );
 
 int QSearch(
