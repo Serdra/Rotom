@@ -41,3 +41,6 @@ int Negamax(
 int QSearch(
     chess::Board &position, int alpha, int beta, int ply, uint64_t &nodes
 );
+
+
+void perft(chess::Board &position, int depth, uint64_t &nodes);

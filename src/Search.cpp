@@ -198,3 +198,21 @@ int QSearch(chess::Board &position, int alpha, int beta, int ply, uint64_t &node
     }
     return alpha;
 }
+
+
+void perft(chess::Board &position, int depth, uint64_t &nodes) {
+    if(depth == 0) {
+        nodes++;
+        return;
+    }
+    if(position.isGameOver() != chess::GameResult::NONE) return;
+
+    chess::Movelist moves;
+    chess::legalmoves(moves, position);
+
+    for(int i = 0; i < moves.size(); i++) {
+        chess::Board nPos = position;
+        nPos.makeMove(moves[i]);
+        perft(nPos, depth-1, nodes);
+    }
+}

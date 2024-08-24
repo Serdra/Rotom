@@ -153,6 +153,33 @@ void UGI() {
             std::cout << "bestmove " << bestMove.first << std::endl;
         }
 
+        else if(split[0] == "perft") {
+            uint64_t nodes = 0;
+            perft(pos, std::stoi(split[1]), nodes);
+            std::cout << nodes << std::endl;
+        }
+
+        else if(split[0] == "split") {
+            uint64_t totalNodes = 0;
+            chess::Movelist moves;
+            chess::legalmoves(moves, pos);
+
+            for(int i = 0; i < moves.size(); i++) {
+                uint64_t nodes = 0;
+                if(split[1] == "1") {
+                    std::cout << moves[i] << ": " << 1 << std::endl;
+                    totalNodes++;
+                } else {
+                    chess::Board nPos = pos;
+                    nPos.makeMove(moves[i]);
+                    perft(pos, std::stoi(split[1]) - 1, nodes);
+                    std::cout << moves[i] << ": " << nodes << std::endl;
+                    totalNodes += nodes;
+                }
+            }
+            std::cout << "Total: " << totalNodes << std::endl;
+        }
+
         else if(split[0] == "quit") {
             break;
         }
