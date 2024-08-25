@@ -20,11 +20,10 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     int evaluation;
     int result;
 
-    Stack stack[256];
-
     chess::Move previousBestMove;
 
     while(true) {
+        Stack stack[256];
         if(depth == 1) 
             result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, nodes);
         else {
@@ -104,6 +103,25 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         return 0;
     }
 
+    int static_eval = eval(position);
+
+    // if(!stack[ply].isPV && stack[ply].canDoNullMove && depth > 2 && !position.inCheck() && static_eval >= beta) {
+    //     stack[ply+1].canDoNullMove = false;
+    //     stack[ply+1].isPV = false;
+
+    //     chess::Board newPosition = position;
+    //     newPosition.makeMove(chess::Move(0, 0));
+    //     nodes++;
+
+    //     int value = -Negamax(newPosition, -beta, -beta + 1, depth - 3, ply + 1, stack, settings, TT, nodes);
+    //     stack[ply].pv.moves.clear();
+    //     stack[ply+1].pv.moves.clear();
+    //     stack[ply+1].canDoNullMove = true;
+    //     if(value >= beta) {
+    //         return value;
+    //     }
+    // }
+
     // Searches each move in turn
     MovePicker moves(position, entry.bestMove);
     chess::Move move;
@@ -113,6 +131,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     int alphaOrig = alpha;
 
     while(moves.next(move, position)) {
+        stack[ply+1].pv.moves.clear();
         // I prefer copy-make to make-unmake
         chess::Board newPosition = position;
         newPosition.makeMove(move);
