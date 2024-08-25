@@ -123,7 +123,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     }
 
     // Searches each move in turn
-    MovePicker moves(position, entry.bestMove);
+    MovePicker moves(position, entry.bestMove, stack[ply].killers);
     chess::Move move;
 
     int result;
@@ -179,7 +179,13 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
             bestMoveValue = result;
         }
         alpha = std::max(alpha, bestMoveValue);
-        if(alpha >= beta) break;
+        if(alpha >= beta) {
+            if(position.at(move.to()) == chess::Piece::None) {
+                if(move != stack[ply].killers[0]) stack[ply].killers[1] = stack[ply].killers[0];
+                stack[ply].killers[0] = move;
+            }
+            break;
+        }
     }
     
     entry.hash = position.hash();

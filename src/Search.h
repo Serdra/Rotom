@@ -34,6 +34,7 @@ struct Stack {
     bool isPV = true;
     bool canDoNullMove = true;
     PV pv;
+    chess::Move killers[2];
 };
 
 std::pair<chess::Move, int> IterativeDeepening(

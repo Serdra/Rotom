@@ -80,3 +80,10 @@ SPRT: llr 2.95, lbound -2.94, ubound 2.94
 Score of Rotom-Dev vs Rotom-Master: 657 - 459 - 99 [0.581] 1215
 57.13 +/- 18.95
 SPRT: llr 2.95, lbound -2.94, ubound 2.94
+
+
+0.10.0 Killer moves
+
+Score of Rotom-Dev vs Rotom-Master: 782 - 583 - 135 [0.566] 1500
+46.37 +/- 16.90
+SPRT: llr 2.96, lbound -2.94, ubound 2.94
