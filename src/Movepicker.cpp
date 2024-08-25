@@ -1,5 +1,6 @@
 #include "includes.h"
 
+int Killer_Score = 36;
 int Quiet_Score = 35;
 
 int SEScore[] = {0, 36, 72, 108};
@@ -49,6 +50,17 @@ struct MovePicker {
         std::swap(moves[curr], moves[bestMoveIdx]);
         curr++;
         return true;
+    }
+
+    MovePicker(chess::Board &b, chess::Move ttMove, chess::Move killers[2]) {
+        chess::legalmoves(moves, b);
+        for(int i = 0; i < moves.size(); i++) {
+            if(moves[i] == ttMove) moves[i].score = TTScore;
+            else if(moves[i] == killers[0]) moves[i].score = Killer_Score;
+            else if(moves[i] == killers[1]) moves[i].score = Killer_Score;
+            else if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Quiet_Score;
+            else moves[i].score = scoreCapture(moves[i], b);
+        }
     }
 
     bool nextCapture(chess::Move &move, chess::Board &b) {
