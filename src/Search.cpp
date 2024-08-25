@@ -105,22 +105,22 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
 
     int static_eval = eval(position);
 
-    // if(!stack[ply].isPV && stack[ply].canDoNullMove && depth > 2 && !position.inCheck() && static_eval >= beta) {
-    //     stack[ply+1].canDoNullMove = false;
-    //     stack[ply+1].isPV = false;
+    if(!stack[ply].isPV && stack[ply].canDoNullMove && depth > 2 && !position.inCheck() && static_eval >= beta) {
+        stack[ply+1].canDoNullMove = false;
+        stack[ply+1].isPV = false;
 
-    //     chess::Board newPosition = position;
-    //     newPosition.makeMove(chess::Move(0, 0));
-    //     nodes++;
+        chess::Board newPosition = position;
+        newPosition.makeMove(chess::Move(0, 0));
+        nodes++;
 
-    //     int value = -Negamax(newPosition, -beta, -beta + 1, depth - 3, ply + 1, stack, settings, TT, nodes);
-    //     stack[ply].pv.moves.clear();
-    //     stack[ply+1].pv.moves.clear();
-    //     stack[ply+1].canDoNullMove = true;
-    //     if(value >= beta) {
-    //         return value;
-    //     }
-    // }
+        int value = -Negamax(newPosition, depth - 3, -beta, -beta + 1, ply + 1, stack, settings, TT, nodes);
+        stack[ply].pv.moves.clear();
+        stack[ply+1].pv.moves.clear();
+        stack[ply+1].canDoNullMove = true;
+        if(value >= beta) {
+            return value;
+        }
+    }
 
     // Searches each move in turn
     MovePicker moves(position, entry.bestMove);
