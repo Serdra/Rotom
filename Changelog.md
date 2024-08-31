@@ -87,3 +87,10 @@ SPRT: llr 2.95, lbound -2.94, ubound 2.94
 Score of Rotom-Dev vs Rotom-Master: 782 - 583 - 135 [0.566] 1500
 46.37 +/- 16.90
 SPRT: llr 2.96, lbound -2.94, ubound 2.94
+
+
+0.10.1 Only generate captures in QSearch
+
+Score of Rotom-Dev vs Rotom-Master: 2355 - 2130 - 383 [0.523] 4868
+16.07 +/- 9.37
+SPRT: llr 2.95, lbound -2.94, ubound 2.94

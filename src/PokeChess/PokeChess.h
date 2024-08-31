@@ -1039,6 +1039,7 @@ Bitboard rookAttackSquares(Bitboard rooks, Bitboard ours, Bitboard theirs) {
     }
     return attacks;
 }
+
 Bitboard kingAttackSquares(Bitboard king) {
     return KingAttacks[builtin::poplsb(king)];
 }
@@ -1057,10 +1058,24 @@ void knightMoves(Square knight, Bitboard ours, Movelist &moves) {
     }
 }
 
+void knightCaptures(Square knight, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard attacks = KnightAttacks[knight] & theirs;
+    while(attacks) {
+        moves.add(Move(knight, builtin::poplsb(attacks)));
+    }
+}
+
 void kingMoves(Square king, Bitboard ours, Movelist &moves) {
     Bitboard attacks = KingAttacks[king] & ~ours;
     while(attacks) {
         moves.add(Move(king, builtin::poplsb(attacks)));
+    }
+}
+
+void kingCaptures(Square knight, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard attacks = KingAttacks[knight] & theirs;
+    while(attacks) {
+        moves.add(Move(knight, builtin::poplsb(attacks)));
     }
 }
 
@@ -1095,6 +1110,45 @@ void bishopMoves(Square bishop, Bitboard ours, Bitboard theirs, Movelist &moves)
     }
 }
 
+void bishopCaptures(Square bishop, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard bb = 1ULL << bishop;
+    while(bb & ~(Ranks[7] | Files[7])) {
+        bb <<= 9;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(bishop, builtin::lsb(bb)));
+            break;
+        }
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[7] | Files[0])) {
+        bb <<= 7;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(bishop, builtin::lsb(bb)));
+            break;
+        }
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[0] | Files[7])) {
+        bb >>= 7;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(bishop, builtin::lsb(bb)));
+            break;
+        }
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[0] | Files[0])) {
+        bb >>= 9;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(bishop, builtin::lsb(bb)));
+            break;
+        }
+    }
+}
+
 void rookMoves(Square rook, Bitboard ours, Bitboard theirs, Movelist &moves) {
     Bitboard bb = 1ULL << rook;
     while(bb & ~Ranks[7]) {
@@ -1123,6 +1177,45 @@ void rookMoves(Square rook, Bitboard ours, Bitboard theirs, Movelist &moves) {
         if(bb & ours) break;
         moves.add(Move(rook, builtin::lsb(bb)));
         if(bb & theirs) break;
+    }
+}
+
+void rookCaptures(Square rook, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard bb = 1ULL << rook;
+    while(bb & ~Ranks[7]) {
+        bb <<= 8;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(rook, builtin::lsb(bb)));
+            break;
+        }
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Files[7]) {
+        bb <<= 1;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(rook, builtin::lsb(bb)));
+            break;
+        }
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Ranks[0]) {
+        bb >>= 8;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(rook, builtin::lsb(bb)));
+            break;
+        }
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Files[0]) {
+        bb >>= 1;
+        if(bb & ours) break;
+        if(bb & theirs) {
+            moves.add(Move(rook, builtin::lsb(bb)));
+            break;
+        }
     }
 }
 
@@ -2008,6 +2101,66 @@ void legalmoves(Movelist &movelist, Board &board) {
         movegen::kingMoves(builtin::poplsb(kings), us, movelist);
     }
     movegen::castlingMoves(occ, board.getCastlingRights(), c, movelist);
+}
+
+void legalcaptures(Movelist &movelist, Board &board) {
+    movelist.clear();
+
+    Color c = board.sideToMove();
+
+    Bitboard pawns = board.pieces(PieceType::Pawn, board.sideToMove());
+    Bitboard bishops = board.pieces(PieceType::Bishop, board.sideToMove());
+    Bitboard knights = board.pieces(PieceType::Knight, board.sideToMove());
+    Bitboard rooks = board.pieces(PieceType::Rook, board.sideToMove());
+    Bitboard queens = board.pieces(PieceType::Queen, board.sideToMove());
+    Bitboard kings = board.pieces(PieceType::King, board.sideToMove());
+
+    Bitboard us = pawns | bishops | knights | rooks | queens | kings;
+    Bitboard them = board.them(board.sideToMove());
+    Bitboard occ = us | them;
+
+    Square EP = board.getEP();
+    Square SE = board.getSE();
+
+    if(SE != 64) {
+        Bitboard SEPiece = 1ULL << SE;
+        if((PieceType)((int)board.at(SE) % 6) == PieceType::Pawn) {
+            movegen::pawnCaptures(SE, them, c, EP, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Knight) {
+            movegen::knightCaptures(SE, us, them, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Bishop) {
+            movegen::bishopCaptures(SE, us, them, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Rook) {
+            movegen::rookCaptures(SE, us, them, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Queen) {
+            movegen::rookCaptures(SE, us, them, movelist);
+            movegen::bishopCaptures(SE, us, them, movelist);
+        } else {
+            movegen::kingCaptures(SE, us, them, movelist);
+        }
+        // movelist.add(Move(0, 0));
+        return;
+    }
+
+    while(pawns) {
+        movegen::pawnCaptures(builtin::poplsb(pawns), them, c, EP, movelist);
+    }
+    while(knights) {
+        movegen::knightCaptures(builtin::poplsb(knights), us, them, movelist);
+    }
+    while(bishops) {
+        movegen::bishopCaptures(builtin::poplsb(bishops), us, them, movelist);
+    }
+    while(rooks) {
+        movegen::rookCaptures(builtin::poplsb(rooks), us, them, movelist);
+    }
+    while(queens) {
+        movegen::rookCaptures(builtin::lsb(queens), us, them, movelist);
+        movegen::bishopCaptures(builtin::poplsb(queens), us, them, movelist);
+    }
+    while(kings) {
+        movegen::kingCaptures(builtin::poplsb(kings), us, them, movelist);
+    }
 }
 
 Move fromUGI(Board &board, std::string ugi) {
