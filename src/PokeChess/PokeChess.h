@@ -1149,8 +1149,6 @@ private:
     void removePiece(Piece piece, Square sq);
     // void removePiece(Piece piece, Square sq, Accumulator &acc);
 
-    std::vector<State> prevStates;
-
     uint64_t pieces_[2][6];
 
     std::array<Piece, 64> board_{};
@@ -1226,24 +1224,11 @@ public:
     }
 
     GameResult isGameOver() {
+        if(builtin::popcount(pieces_[0][5] | pieces_[1][5]) == 0) return GameResult::DRAW;
         if(builtin::popcount(pieces(PieceType::King, sideToMove())) == 0) return GameResult::LOSE;
         if(builtin::popcount(pieces(PieceType::King, Color((int)sideToMove_ ^ 1))) == 0) return GameResult::WIN;
         if(halfMoves >= 100) return GameResult::DRAW;
-        if(isRepetition()) return GameResult::DRAW;
         return GameResult::NONE;
-    }
-
-    bool isRepetition(int count = 2) {
-        uint8_t c = 0;
-
-        for (int i = static_cast<int>(prevStates.size()) - 2;
-            i >= 0 && i >= static_cast<int>(prevStates.size()) - halfMoves - 1; i -= 2) {
-            if (prevStates[i].hash == hash_) c++;
-
-            if (c == count) return true;
-        }
-
-        return false;
     }
 
     std::string getCastleString() const;
@@ -1335,9 +1320,6 @@ void Board::setFen(std::string fen) {
     }
 
     hash_ = zobrist();
-
-    prevStates.clear();
-    prevStates.reserve(150);
 }
 
 void Board::setFenRandom(std::string fen) {
@@ -1425,9 +1407,6 @@ void Board::setFenRandom(std::string fen) {
     }
 
     hash_ = zobrist();
-
-    prevStates.clear();
-    prevStates.reserve(150);
 }
 
 std::string Board::getFen() {
@@ -1619,7 +1598,6 @@ void Board::makeMove(Move move) {
         State s;
         s.hash = hash_;
         s.half_moves = halfMoves;
-        prevStates.emplace_back(s);
 
         fullMoves++;
 
@@ -1637,11 +1615,6 @@ void Board::makeMove(Move move) {
     PieceType pt = (PieceType)((int)at(move.from()) % 6);
     assert(pt != PieceType::None);
     pokemon::Effectiveness interaction = pokemon::Effectiveness::Neutral;
-    
-    State s;
-    s.hash = hash_;
-    s.half_moves = halfMoves;
-    prevStates.emplace_back(s);
 
     halfMoves++;
     fullMoves++;
