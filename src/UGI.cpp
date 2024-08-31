@@ -172,7 +172,7 @@ void UGI() {
                 } else {
                     chess::Board nPos = pos;
                     nPos.makeMove(moves[i]);
-                    perft(pos, std::stoi(split[1]) - 1, nodes);
+                    perft(nPos, std::stoi(split[1]) - 1, nodes);
                     std::cout << moves[i] << ": " << nodes << std::endl;
                     totalNodes += nodes;
                 }
