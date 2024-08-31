@@ -1565,15 +1565,15 @@ void Board::removePiece(Piece piece, Square sq) {
 //     hash_ ^= zobrist::piece(piece, sq);
 //     pieces_[static_cast<int>(piece) / 6][static_cast<int>(piece) % 6] ^= (1ULL << sq);
 //     board_[sq] = Piece::None;
-
+//
 //     assert((int)piece * 64 + (int)sq < 768);
 //     assert(pieceSwap[(int)piece] * 64 + ((int)sq ^ 56) < 768);
-    
+//    
 //     acc.phase -= phaseScore[(int)piece % 6];
-    
+//   
 //     acc.white_mg -= PST_mg[(int)piece * 64 + (int)sq];
 //     acc.white_eg -= PST_eg[(int)piece * 64 + (int)sq];
-
+//
 //     acc.black_mg -= PST_mg[pieceSwap[(int)piece] * 64 + ((int)sq ^ 56)];
 //     acc.black_eg -= PST_eg[pieceSwap[(int)piece] * 64 + ((int)sq ^ 56)];
 // }
@@ -1774,60 +1774,60 @@ void Board::makeMove(Move move) {
 //         s.hash = hash_;
 //         s.half_moves = halfMoves;
 //         prevStates.emplace_back(s);
-
+//
 //         fullMoves++;
-
+//
 //         hash_ ^= zobrist::sideToMove();
 //         if(epSquare != 64) hash_ ^= zobrist::enpassant(epSquare & 7);
 //         epSquare = 64;
 //         seSquare = 64;
-
+//
 //         sideToMove_ = (Color)((int)sideToMove_ ^ 1);
 //         return acc;
 //     }
-
+//
 //     bool capture = at(move.to()) != Piece::None && move.typeOf() != Move::Castling;
 //     Piece captured = at(move.to());
 //     PieceType pt = (PieceType)((int)at(move.from()) % 6);
 //     assert(pt != PieceType::None);
 //     pokemon::Effectiveness interaction = pokemon::Effectiveness::Neutral;
-    
+//   
 //     State s;
 //     s.hash = hash_;
 //     s.half_moves = halfMoves;
 //     prevStates.emplace_back(s);
-
+//
 //     halfMoves++;
 //     fullMoves++;
-
+//
 //     if(epSquare != 64) hash_ ^= zobrist::enpassant(epSquare & 7);
-
+//
 //     hash_ ^= zobrist::castling(castlingRights.getHashIndex());
-
+//
 //     if(capture) {
 //         interaction = pokemon::lookupMoveEffectiveness(typeAt(move.from()), typeAt(move.to()));
 //         if(interaction == pokemon::Effectiveness::Immune) goto nullmove;
 //         halfMoves = 0;
-
+//
 //         removePiece(captured, move.to(), acc);
 //         types_[move.to()] = pokemon::Type::None;
-
+//
 //         Rank rank = move.to() >> 3;
-
+//
 //         if((PieceType)((int)captured % 6) == PieceType::Rook && 
 //         ((rank == 0 && sideToMove_ == Color::Black) || 
 //         (rank == 7 && sideToMove_ == Color::White))) {
 //             Square kingSq = builtin::lsb(pieces_[(int)sideToMove_ ^ 1][5]);
 //             auto file = (move.to() > kingSq ? CastleSide::KING_SIDE : CastleSide::QUEEN_SIDE);
-
+//
 //             if(castlingRights.getRookFile(Color((int)sideToMove_ ^ 1), file) == ((int)move.to() & 7)) {
 //                 castlingRights.clearCastlingRight(Color((int)sideToMove_ ^ 1), file);
 //             }
 //         }
 //     }
-
+//
 //     if(interaction != pokemon::Effectiveness::SuperEffective) epSquare = 64;
-
+//
 //     if(pt == PieceType::King) {
 //         castlingRights.clearCastlingRight(sideToMove_);
 //     }
@@ -1848,37 +1848,37 @@ void Board::makeMove(Move move) {
 //     // If the move was a pawn double move, set EP
 //     else if (pt == PieceType::Pawn) {
 //         halfMoves = 0;
-
+//
 //         if(std::abs(int(move.to()) - int(move.from())) == 16) {
 //             epSquare = (int)move.to() ^ 8;
 //             hash_ ^= zobrist::enpassant(epSquare & 7);
 //         }
 //     }
-
+//
 //     captureDone:
-
+//
 //     if(move.typeOf() == Move::Castling) {
 //         bool kingSide = move.to() > move.from();
 //         Square rookTo = (kingSide ? 5 : 3) ^ (56 * (int)sideToMove_);
 //         Square kingTo = (kingSide ? 6 : 2) ^ (56 * (int)sideToMove_);
-
+//
 //         Square rookFrom = (kingSide ? 7 : 0) ^ (56 * (int)sideToMove_);
-
+//
 //         assert(at(rookFrom) == Piece::WhiteRook || at(rookFrom) == Piece::BlackRook);
 //         assert(at(move.from()) == Piece::WhiteKing || at(move.from()) == Piece::BlackKing);
-
+//
 //         const auto king = at(move.from());
 //         const auto rook = at(rookFrom);
-
+//
 //         removePiece(king, move.from(), acc);
 //         removePiece(rook, rookFrom, acc);
-
+//
 //         placePiece(king, kingTo, acc);
 //         placePiece(rook, rookTo, acc);
-
+//
 //         types_[kingTo] = types_[move.from()];
 //         types_[rookTo] = types_[rookFrom];
-
+//
 //         types_[move.from()] = pokemon::Type::None;
 //         types_[rookFrom] = pokemon::Type::None;
 //     } 
@@ -1892,24 +1892,24 @@ void Board::makeMove(Move move) {
 //     }
 //     else {
 //         auto piece = at(move.from());
-
+//
 //         removePiece(piece, move.from(), acc);
-
+//
 //         if(interaction != pokemon::Effectiveness::Resist) {
 //             placePiece(piece, move.to(), acc);
 //             types_[move.to()] = types_[move.from()];
 //         }
 //         types_[move.from()] = pokemon::Type::None;
 //     }
-
+//
 //     if(move.typeOf() == Move::EnPassant) {
 //         removePiece(Piece(((int)sideToMove_ ^ 1) * 6 + (int)PieceType::Pawn), Square(int(move.to()) ^ 8), acc);
 //         types_[Square(int(move.to()) ^ 8)] = pokemon::Type::None;
 //     }
-
+//
 //     hash_ ^= zobrist::sideToMove();
 //     hash_ ^= zobrist::castling(castlingRights.getHashIndex());
-
+//
 //     if(interaction == pokemon::Effectiveness::SuperEffective) {
 //         seSquare = move.to();
 //     }
