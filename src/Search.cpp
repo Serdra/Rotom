@@ -244,6 +244,11 @@ void perft(chess::Board &position, int depth, uint64_t &nodes) {
     chess::Movelist moves;
     chess::legalmoves(moves, position);
 
+    if(depth == 1) {
+        nodes += moves.size();
+        return;
+    }
+
     for(int i = 0; i < moves.size(); i++) {
         chess::Board nPos = position;
         nPos.makeMove(moves[i]);
