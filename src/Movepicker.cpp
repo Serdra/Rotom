@@ -21,7 +21,7 @@ struct MovePicker {
     chess::Movelist moves;
 
     MovePicker(chess::Board &b) {
-        chess::legalmoves(moves, b);
+        chess::legalcaptures(moves, b);
         for(int i = 0; i < moves.size(); i++) {
             if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Quiet_Score;
             else moves[i].score = scoreCapture(moves[i], b);
@@ -65,17 +65,12 @@ struct MovePicker {
 
     bool nextCapture(chess::Move &move, chess::Board &b) {
         if(curr == moves.size()) return false;
-        
-        int bestMoveIdx = -1;
-        int bestMoveValue = INT32_MIN;
 
-        for(int i = curr; i < moves.size(); i++) {
-            if(b.at(moves[i].to()) != chess::Piece::None && moves[i].score > bestMoveValue) {
-                bestMoveIdx = i;
-                bestMoveValue = moves[i].score;
-            }
+        int bestMoveIdx = curr;
+
+        for(int i = curr + 1; i < moves.size(); i++) {
+            if(moves[i].score > moves[bestMoveIdx].score) bestMoveIdx = i;
         }
-        if(bestMoveIdx == -1) return false;
 
         move = moves[bestMoveIdx];
         std::swap(moves[curr], moves[bestMoveIdx]);
