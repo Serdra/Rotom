@@ -868,7 +868,7 @@ void pawnPushes(Square pawn, Bitboard occupied, Color c, Movelist &moves) {
 
 void pawnCaptures(Square pawn, Bitboard enemy, Color c, Square epSquare, Movelist &moves) {
     Bitboard bb = 1ULL << pawn;
-    if((pawn & 7) != (epSquare & 7)) enemy |= (1ULL << epSquare);
+    if((pawn & 7) != (epSquare & 7) && epSquare != 64) enemy |= (1ULL << epSquare);
     if(c == Color::White) {
         Bitboard captures = 0ULL;
         if(bb & ~Files[7]) captures = bb << 9;
@@ -1671,6 +1671,12 @@ void Board::makeMove(Move move) {
             }
         }
     }
+    if(move.typeOf() == Move::EnPassant) {
+        interaction = pokemon::lookupMoveEffectiveness(typeAt(move.from()), typeAt(epSquare ^ 8));
+        if(interaction == pokemon::Effectiveness::Immune) goto nullmove;
+        removePiece(Piece(((int)sideToMove_ ^ 1) * 6 + (int)PieceType::Pawn), Square(int(move.to()) ^ 8));
+        types_[Square(int(move.to()) ^ 8)] = pokemon::Type::None;
+    }
 
     if(interaction != pokemon::Effectiveness::SuperEffective) epSquare = 64;
 
@@ -1746,11 +1752,6 @@ void Board::makeMove(Move move) {
             types_[move.to()] = types_[move.from()];
         }
         types_[move.from()] = pokemon::Type::None;
-    }
-
-    if(move.typeOf() == Move::EnPassant) {
-        removePiece(Piece(((int)sideToMove_ ^ 1) * 6 + (int)PieceType::Pawn), Square(int(move.to()) ^ 8));
-        types_[Square(int(move.to()) ^ 8)] = pokemon::Type::None;
     }
 
     hash_ ^= zobrist::sideToMove();

@@ -100,7 +100,7 @@ int main() {
         for(std::string fen : fens) {
             chess::Board board(fen, false);
             uint64_t nodes = 0;
-            perft(board, 5, nodes);
+            perft(board, 6, nodes);
             std::cout << fen << " : " << nodes << std::endl;
         }
     }
