@@ -1,6 +1,6 @@
 #include "includes.h"
 
-std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int stopValue, TransTable &TT) {
+std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int stopValue, TransTable &TT, History &Hist) {
     auto start = std::chrono::high_resolution_clock::now();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> hardTime, softTime;
@@ -25,11 +25,11 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     while(true) {
         Stack stack[256];
         if(depth == 1) 
-            result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, nodes);
+            result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
         else {
-            result = Negamax(position, depth, evaluation - 30, evaluation + 30, 0, stack, settings, TT, nodes);
+            result = Negamax(position, depth, evaluation - 30, evaluation + 30, 0, stack, settings, TT, Hist, nodes);
             if(result <= (evaluation - 30) || result >= (evaluation + 30)) {
-                result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, nodes);
+                result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
             }
         }
 
@@ -63,7 +63,7 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     return {previousBestMove, evaluation};
 }
 
-int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, uint64_t &nodes) {
+int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, History &Hist, uint64_t &nodes) {
     // Step one is to check if the game is over. This is fast and perfectly accurate so we do it first
     if(position.isGameOver() != chess::GameResult::NONE) {
         if(position.isGameOver() == chess::GameResult::WIN) return MATE - ply;
@@ -113,7 +113,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         newPosition.makeMove(chess::Move(0, 0));
         nodes++;
 
-        int value = -Negamax(newPosition, depth - 3, -beta, -beta + 1, ply + 1, stack, settings, TT, nodes);
+        int value = -Negamax(newPosition, depth - 3, -beta, -beta + 1, ply + 1, stack, settings, TT, Hist, nodes);
         stack[ply].pv.moves.clear();
         stack[ply+1].pv.moves.clear();
         stack[ply+1].canDoNullMove = true;
@@ -123,7 +123,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     }
 
     // Searches each move in turn
-    MovePicker moves(position, entry.bestMove, stack[ply].killers);
+    MovePicker moves(position, entry.bestMove, stack[ply].killers, Hist);
     chess::Move move;
 
     int result;
@@ -145,23 +145,23 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
             stack[ply+1].isPV = true;
 
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, nodes);
+                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
             } else {
-                result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, nodes);
+                result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, Hist, nodes);
             }
         } else {
             stack[ply+1].isPV = false;
 
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, nodes);
+                result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
             } else {
-                result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, nodes);
+                result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {
-                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, nodes);
+                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
                 } else {
-                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, nodes);
+                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, Hist, nodes);
                 }
             }
         }
@@ -181,11 +181,15 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         alpha = std::max(alpha, bestMoveValue);
         if(alpha >= beta) {
             if(position.at(move.to()) == chess::Piece::None) {
+                Hist.update(move, depth * depth);
                 if(move != stack[ply].killers[0]) stack[ply].killers[1] = stack[ply].killers[0];
                 stack[ply].killers[0] = move;
             }
             break;
         }
+        // if(position.at(move.to()) == chess::Piece::None) {
+        //     Hist.update(move, -1 * depth * depth);
+        // }
     }
     
     entry.hash = position.hash();
