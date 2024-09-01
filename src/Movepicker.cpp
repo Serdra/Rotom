@@ -9,11 +9,11 @@ int KillerScore = 2'500;
 int16_t MaxHistory = 2'000;
 
 struct History {
-    int16_t score[64][64] = {0};
+    int16_t score[2][64][64] = {0};
 
-    void update(chess::Move move, int16_t bonus) {
+    void update(chess::Color stm, chess::Move move, int16_t bonus) {
         int clamped = std::clamp(bonus, (int16_t)-MaxHistory, MaxHistory);
-        score[move.from()][move.to()] += clamped - score[move.from()][move.to()] * abs(clamped) / MaxHistory;
+        score[(int)stm][move.from()][move.to()] += clamped - score[(int)stm][move.from()][move.to()] * abs(clamped) / MaxHistory;
     }
 };
 
@@ -42,7 +42,7 @@ struct MovePicker {
             if(moves[i] == ttMove) moves[i].score = TTScore;
             else if(moves[i] == killers[0]) moves[i].score = KillerScore;
             else if(moves[i] == killers[1]) moves[i].score = KillerScore;
-            else if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Hist.score[moves[i].from()][moves[i].to()];
+            else if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Hist.score[(int)b.sideToMove()][moves[i].from()][moves[i].to()];
             else moves[i].score = 50 * scoreCapture(moves[i], b);
         }
     }

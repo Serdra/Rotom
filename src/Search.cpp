@@ -3,6 +3,14 @@
 std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int stopValue, TransTable &TT, History &Hist) {
     auto start = std::chrono::high_resolution_clock::now();
 
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 64; j++) {
+            for(int k = 0; k < 64; k++) {
+                Hist.score[i][j][k] /= 10;
+            }
+        }
+    }
+
     std::chrono::time_point<std::chrono::high_resolution_clock> hardTime, softTime;
     softTime = start + std::chrono::milliseconds((int)(stopValue * SOFT_LIMIT_MULT));
     hardTime = start + std::chrono::milliseconds((int)(stopValue * HARD_LIMIT_MULT));
@@ -181,7 +189,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         alpha = std::max(alpha, bestMoveValue);
         if(alpha >= beta) {
             if(position.at(move.to()) == chess::Piece::None) {
-                Hist.update(move, depth * depth);
+                Hist.update(position.sideToMove(), move, depth * depth);
                 if(move != stack[ply].killers[0]) stack[ply].killers[1] = stack[ply].killers[0];
                 stack[ply].killers[0] = move;
             }

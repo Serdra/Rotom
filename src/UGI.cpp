@@ -68,9 +68,11 @@ void UGI() {
         }
         
         else if(split[0] == "uginewgame") {
-            for(int i = 0; i < 64; i++) {
+            for(int i = 0; i < 2; i++) {
                 for(int j = 0; j < 64; j++) {
-                    Hist.score[i][j] = 0;
+                    for(int k = 0; k < 64; k++) {
+                        Hist.score[i][j][k] = 0;
+                    }
                 }
             }
         }
