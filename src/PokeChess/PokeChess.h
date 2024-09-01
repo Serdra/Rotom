@@ -866,6 +866,34 @@ void pawnPushes(Square pawn, Bitboard occupied, Color c, Movelist &moves) {
     }
 }
 
+bool pawnPushPseudoLegal(Square pawn, Bitboard occupied, Color c, Bitboard target) {
+    Bitboard bb = 1ULL << pawn;
+    if(c == Color::White) {
+        Bitboard singlePush = (bb << 8) & ~occupied;
+        if(singlePush & target) {
+            return true;
+        }
+        else if (singlePush) {
+            if(bb & Ranks[1]) {
+                Bitboard doublePush = (singlePush << 8) & ~occupied;
+                if(doublePush & target) return true;
+            }
+        }
+    } else {
+        Bitboard singlePush = (bb >> 8) & ~occupied;
+        if(singlePush & target) {
+            return true;
+        }
+        else if(singlePush) {
+            if(bb & Ranks[6]) {
+                Bitboard doublePush = (singlePush >> 8) & ~occupied;
+                if(doublePush & target) return true;
+            }
+        }
+    }
+    return false;
+}
+
 void pawnCaptures(Square pawn, Bitboard enemy, Color c, Square epSquare, Movelist &moves) {
     Bitboard bb = 1ULL << pawn;
     if((pawn & 7) != (epSquare & 7) && epSquare != 64) enemy |= (1ULL << epSquare);
@@ -906,6 +934,25 @@ void pawnCaptures(Square pawn, Bitboard enemy, Color c, Square epSquare, Movelis
             }
         }
     }
+}
+
+bool pawnCapturesPseudoLegal(Square pawn, Bitboard enemy, Color c, Square epSquare, Bitboard target) {
+    Bitboard bb = 1ULL << pawn;
+    if((pawn & 7) != (epSquare & 7) && epSquare != 64) enemy |= (1ULL << epSquare);
+    if(c == Color::White) {
+        Bitboard captures = 0ULL;
+        if(bb & ~Files[7]) captures = bb << 9;
+        if(bb & ~Files[0]) captures |= bb << 7;
+        captures &= enemy;
+        if(captures & target) return true;
+    } else {
+        Bitboard captures = 0ULL;
+        if(bb & ~Files[7]) captures = bb >> 7;
+        if(bb & ~Files[0]) captures |= bb >> 9;
+        captures &= enemy;
+        if(captures & target) return true;
+    }
+    return false;
 }
 
 Bitboard KnightAttacks[64] = {
@@ -1065,6 +1112,19 @@ void knightCaptures(Square knight, Bitboard ours, Bitboard theirs, Movelist &mov
     }
 }
 
+void knightQuiets(Square knight, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard attacks = KnightAttacks[knight] & ~(theirs | ours);
+    while(attacks) {
+        moves.add(Move(knight, builtin::poplsb(attacks)));
+    }
+}
+
+bool knightPseudoLegal(Square knight, Bitboard ours, Bitboard target) {
+    Bitboard attacks = KnightAttacks[knight] & ~ours;
+    return attacks & target;
+}
+
+
 void kingMoves(Square king, Bitboard ours, Movelist &moves) {
     Bitboard attacks = KingAttacks[king] & ~ours;
     while(attacks) {
@@ -1072,12 +1132,25 @@ void kingMoves(Square king, Bitboard ours, Movelist &moves) {
     }
 }
 
-void kingCaptures(Square knight, Bitboard ours, Bitboard theirs, Movelist &moves) {
-    Bitboard attacks = KingAttacks[knight] & theirs;
+void kingCaptures(Square king, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard attacks = KingAttacks[king] & theirs;
     while(attacks) {
-        moves.add(Move(knight, builtin::poplsb(attacks)));
+        moves.add(Move(king, builtin::poplsb(attacks)));
     }
 }
+
+void kingQuiets(Square king, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard attacks = KingAttacks[king] & ~(theirs | ours);
+    while(attacks) {
+        moves.add(Move(king, builtin::poplsb(attacks)));
+    }
+}
+
+bool kingPseudoLegal(Square king, Bitboard ours, Bitboard target) {
+    Bitboard attacks = KingAttacks[king] & ~ours;
+    return attacks & target;
+}
+
 
 void bishopMoves(Square bishop, Bitboard ours, Bitboard theirs, Movelist &moves) {
     Bitboard bb = 1ULL << bishop;
@@ -1149,6 +1222,70 @@ void bishopCaptures(Square bishop, Bitboard ours, Bitboard theirs, Movelist &mov
     }
 }
 
+void bishopQuiets(Square bishop, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard bb = 1ULL << bishop;
+    while(bb & ~(Ranks[7] | Files[7])) {
+        bb <<= 9;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(bishop, builtin::lsb(bb)));
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[7] | Files[0])) {
+        bb <<= 7;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(bishop, builtin::lsb(bb)));
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[0] | Files[7])) {
+        bb >>= 7;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(bishop, builtin::lsb(bb)));
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[0] | Files[0])) {
+        bb >>= 9;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(bishop, builtin::lsb(bb)));
+    }
+}
+
+bool bishopPseudoLegal(Square bishop, Bitboard ours, Bitboard theirs, Bitboard target) {
+    Bitboard bb = 1ULL << bishop;
+    while(bb & ~(Ranks[7] | Files[7])) {
+        bb <<= 9;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[7] | Files[0])) {
+        bb <<= 7;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[0] | Files[7])) {
+        bb >>= 7;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    bb = 1ULL << bishop;
+    while(bb & ~(Ranks[0] | Files[0])) {
+        bb >>= 9;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    return false;
+}
+
+
 void rookMoves(Square rook, Bitboard ours, Bitboard theirs, Movelist &moves) {
     Bitboard bb = 1ULL << rook;
     while(bb & ~Ranks[7]) {
@@ -1219,6 +1356,70 @@ void rookCaptures(Square rook, Bitboard ours, Bitboard theirs, Movelist &moves) 
     }
 }
 
+void rookQuiets(Square rook, Bitboard ours, Bitboard theirs, Movelist &moves) {
+    Bitboard bb = 1ULL << rook;
+    while(bb & ~Ranks[7]) {
+        bb <<= 8;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(rook, builtin::lsb(bb)));
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Files[7]) {
+        bb <<= 1;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(rook, builtin::lsb(bb)));
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Ranks[0]) {
+        bb >>= 8;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(rook, builtin::lsb(bb)));
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Files[0]) {
+        bb >>= 1;
+        if(bb & ours) break;
+        if(bb & theirs) break;
+        moves.add(Move(rook, builtin::lsb(bb)));
+    }
+}
+
+bool rookPseudoLegal(Square rook, Bitboard ours, Bitboard theirs, Bitboard target) {
+    Bitboard bb = 1ULL << rook;
+    while(bb & ~Ranks[7]) {
+        bb <<= 8;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Files[7]) {
+        bb <<= 1;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Ranks[0]) {
+        bb >>= 8;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    bb = 1ULL << rook;
+    while(bb & ~Files[0]) {
+        bb >>= 1;
+        if(bb & ours) break;
+        if(bb & target) return true;
+        if(bb & theirs) break;
+    }
+    return false;
+}
+
+
 void castlingMoves(Bitboard occupied, CastlingRights rights, Color c, Movelist &moves) {
     // Assumes castling rights are correct
     Square kingFrom = (c == Color::White ? 4 : 60);
@@ -1230,6 +1431,19 @@ void castlingMoves(Bitboard occupied, CastlingRights rights, Color c, Movelist &
         Square kingTo = (side == CastleSide::KING_SIDE ? 6 : 2) ^ ((int)c * 56);
         moves.add(Move(kingFrom, kingTo, pokechess::chess::PieceType::Knight, Move::Castling));
     }
+}
+
+bool castlingPseudoLegal(Bitboard occupied, CastlingRights rights, Color c, Square target) {
+    Square kingFrom = (c == Color::White ? 4 : 60);
+
+    for(const auto side : {CastleSide::KING_SIDE, CastleSide::QUEEN_SIDE}) {
+        if(!rights.hasCastlingRight(c, side)) continue;
+        if(occupied & CastleMask[(int)c][(int)side]) continue;
+
+        Square kingTo = (side == CastleSide::KING_SIDE ? 6 : 2) ^ ((int)c * 56);
+        if(kingTo == target) return true;
+    }
+    return false;
 }
 
 } // namespace movegen
@@ -2013,6 +2227,7 @@ bool Board::inCheck() {
     return false;
 }
 
+
 void legalmoves(Movelist &movelist, Board &board) {
     movelist.clear();
 
@@ -2134,6 +2349,106 @@ void legalcaptures(Movelist &movelist, Board &board) {
     while(kings) {
         movegen::kingCaptures(builtin::poplsb(kings), us, them, movelist);
     }
+}
+
+void legalquiets(Movelist &movelist, Board &board) {
+    Color c = board.sideToMove();
+
+    Bitboard pawns = board.pieces(PieceType::Pawn, board.sideToMove());
+    Bitboard bishops = board.pieces(PieceType::Bishop, board.sideToMove());
+    Bitboard knights = board.pieces(PieceType::Knight, board.sideToMove());
+    Bitboard rooks = board.pieces(PieceType::Rook, board.sideToMove());
+    Bitboard queens = board.pieces(PieceType::Queen, board.sideToMove());
+    Bitboard kings = board.pieces(PieceType::King, board.sideToMove());
+
+    Bitboard us = pawns | bishops | knights | rooks | queens | kings;
+    Bitboard them = board.them(board.sideToMove());
+    Bitboard occ = us | them;
+
+    Square EP = board.getEP();
+    Square SE = board.getSE();
+
+    if(SE != 64) {
+        Bitboard SEPiece = 1ULL << SE;
+        if((PieceType)((int)board.at(SE) % 6) == PieceType::Pawn) {
+            movegen::pawnPushes(SE, occ, c, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Knight) {
+            movegen::knightQuiets(SE, us, them, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Bishop) {
+            movegen::bishopQuiets(SE, us, them, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Rook) {
+            movegen::rookQuiets(SE, us, them, movelist);
+        } else if((PieceType)((int)board.at(SE) % 6) == PieceType::Queen) {
+            movegen::rookQuiets(SE, us, them, movelist);
+            movegen::bishopQuiets(SE, us, them, movelist);
+        } else {
+            movegen::kingQuiets(SE, us, them, movelist);
+        }
+        movelist.add(Move(0, 0));
+        return;
+    }
+
+    while(pawns) {
+        movegen::pawnPushes(builtin::poplsb(pawns), occ, c, movelist);
+    }
+    while(knights) {
+        movegen::knightQuiets(builtin::poplsb(knights), us, them, movelist);
+    }
+    while(bishops) {
+        movegen::bishopQuiets(builtin::poplsb(bishops), us, them, movelist);
+    }
+    while(rooks) {
+        movegen::rookQuiets(builtin::poplsb(rooks), us, them, movelist);
+    }
+    while(queens) {
+        movegen::rookQuiets(builtin::lsb(queens), us, them, movelist);
+        movegen::bishopQuiets(builtin::poplsb(queens), us, them, movelist);
+    }
+    while(kings) {
+        movegen::kingQuiets(builtin::poplsb(kings), us, them, movelist);
+    }
+    movegen::castlingMoves(occ, board.getCastlingRights(), c, movelist);
+}
+
+
+bool isMovePsuedoLegal(Board &board, Move move) {
+    if(board.getSE() != 64 && move.from() == 0 and move.to() == 0) return true;
+    if(board.getSE() != 64 && board.getSE() != move.from()) return false;
+    Piece moving = board.at(move.from());
+    if(moving == Piece::None) return false;
+    if((int)moving / 6 != (int)board.sideToMove()) return false;
+    PieceType movingType = (PieceType)((int)moving % 6);
+
+    Color c = board.sideToMove();
+
+    Bitboard us = board.us(board.sideToMove());
+    Bitboard them = board.them(board.sideToMove());
+    Bitboard occ = us | them;
+
+    Bitboard target = 1ULL << move.to();
+
+    if(movingType == PieceType::Pawn) {
+        return movegen::pawnCapturesPseudoLegal(move.from(), them, c, board.getEP(), target) ||
+        movegen::pawnPushPseudoLegal(move.from(), occ, c, target);
+    }
+    if(movingType == PieceType::Knight) {
+        return movegen::knightPseudoLegal(move.from(), us, target);
+    }
+    if(movingType == PieceType::Bishop) {
+        return movegen::bishopPseudoLegal(move.from(), us, them, target);
+    }
+    if(movingType == PieceType::Rook) {
+        return movegen::rookPseudoLegal(move.from(), us, them, target);
+    }
+    if(movingType == PieceType::Queen) {
+        return movegen::bishopPseudoLegal(move.from(), us, them, target) ||
+        movegen::rookPseudoLegal(move.from(), us, them, target);
+    }
+    if(movingType == PieceType::King) {
+        return movegen::kingPseudoLegal(move.from(), us, target) ||
+        movegen::castlingPseudoLegal(occ, board.getCastlingRights(), c, move.to());
+    }
+    return false;
 }
 
 Move fromUGI(Board &board, std::string ugi) {
