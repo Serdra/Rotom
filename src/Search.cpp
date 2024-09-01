@@ -242,14 +242,16 @@ void perft(chess::Board &position, int depth, uint64_t &nodes) {
     if(position.isGameOver() != chess::GameResult::NONE) return;
 
     chess::Movelist moves;
-    chess::legalmoves(moves, position);
+    chess::legalcaptures(moves, position);
+    chess::legalquiets(moves, position);
 
-    if(depth == 1) {
-        nodes += moves.size();
-        return;
-    }
+    // if(depth == 1) {
+    //     nodes += moves.size();
+    //     return;
+    // }
 
     for(int i = 0; i < moves.size(); i++) {
+        if(!chess::isMovePsuedoLegal(position, moves[i])) continue;
         chess::Board nPos = position;
         nPos.makeMove(moves[i]);
         perft(nPos, depth-1, nodes);

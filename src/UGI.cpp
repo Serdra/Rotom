@@ -165,6 +165,7 @@ void UGI() {
             chess::legalmoves(moves, pos);
 
             for(int i = 0; i < moves.size(); i++) {
+                if(!chess::isMovePsuedoLegal(pos, moves[i])) continue;
                 uint64_t nodes = 0;
                 if(split[1] == "1") {
                     std::cout << moves[i] << ": " << 1 << std::endl;
