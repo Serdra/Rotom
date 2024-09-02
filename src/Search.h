@@ -38,11 +38,11 @@ struct Stack {
 };
 
 std::pair<chess::Move, int> IterativeDeepening(
-    chess::Board position, StopType stop, int stopValue, TransTable &TT
+    chess::Board position, StopType stop, int stopValue, TransTable &TT, History &Hist
 );
 
 int Negamax(
-    chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, uint64_t &nodes
+    chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, History &Hist, uint64_t &nodes
 );
 
 int QSearch(

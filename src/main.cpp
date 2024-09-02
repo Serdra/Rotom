@@ -10,6 +10,7 @@ int main() {
     if (input == "book") {
         printSearchUpdates = false;
         TransTable TT(128);
+        History Hist;
         while(true) {
             int randomMoves = (rand() % 5) + 6;
             while(true) {
@@ -20,7 +21,7 @@ int main() {
                     pos.makeMove(moves[rand() % moves.size()]);
                 }
                 if(pos.isGameOver() == chess::GameResult::NONE) {
-                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Depth, 8, TT);
+                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Depth, 8, TT, Hist);
                     if(abs(result.second) < 250) {
                         std::cout << pos.getFen() << std::endl;
                         break;
@@ -32,6 +33,7 @@ int main() {
     if (input == "analyze") {
         printSearchUpdates = false;
         TransTable TT(256);
+        History Hist;
 
         std::string startingFen;
         std::string moveStrings;
@@ -46,7 +48,7 @@ int main() {
         std::vector<std::string> moves = chess::splitString(moveStrings, ' ');
 
         int moveTime = 1000;
-        std::pair<chess::Move, int> prevResult = IterativeDeepening(position, StopType::Time, moveTime, TT);
+        std::pair<chess::Move, int> prevResult = IterativeDeepening(position, StopType::Time, moveTime, TT, Hist);
 
         // Validate moves
         for(int i = 0; i < moves.size() && position.isGameOver() == chess::GameResult::NONE; i++) {
@@ -69,7 +71,7 @@ int main() {
         position = chess::Board(startingFen, false);
         for(int i = 0; i < moves.size() && position.isGameOver() == chess::GameResult::NONE; i++) {
             position.makeMove(chess::fromUGI(position, moves[i]));
-            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime, TT);
+            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime, TT, Hist);
             if(-result.second < (prevResult.second - 80) && (position.getSE() == 64) && prevResult.first != chess::fromUGI(position, moves[i])) {
                 std::cout << "Potential blunder " << moves[i] << " best move was " << prevResult.first << " loss " << prevResult.second + result.second << std::endl;
             }

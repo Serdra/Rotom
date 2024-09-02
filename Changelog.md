@@ -94,3 +94,11 @@ SPRT: llr 2.96, lbound -2.94, ubound 2.94
 Score of Rotom-Dev vs Rotom-Master: 2355 - 2130 - 383 [0.523] 4868
 16.07 +/- 9.37
 SPRT: llr 2.95, lbound -2.94, ubound 2.94
+
+
+0.11.0 History
+```
+Score of Rotom-Dev vs Rotom-Master: 1202 - 999 - 265 [0.541] 2466
+28.67 +/- 12.98
+SPRT: llr 2.96, lbound -2.94, ubound 2.94
+```
