@@ -11,9 +11,9 @@ int16_t MaxHistory = 2'000;
 struct History {
     int16_t score[2][64][64] = {0};
 
-    void update(chess::Color stm, chess::Move move, int16_t bonus) {
-        int clamped = std::clamp(bonus, (int16_t)-MaxHistory, MaxHistory);
-        score[(int)stm][move.from()][move.to()] += clamped - score[(int)stm][move.from()][move.to()] * abs(clamped) / MaxHistory;
+    void update(chess::Color stm, chess::Move move, int16_t bonus) {;
+        score[(int)stm][move.from()][move.to()] += bonus;
+        score[(int)stm][move.from()][move.to()] = std::min(score[(int)stm][move.from()][move.to()], MaxHistory);
     }
 };
 
