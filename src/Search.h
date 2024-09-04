@@ -9,6 +9,9 @@ const int MATE = 10256;
 const float SOFT_LIMIT_MULT = 0.68;
 const float HARD_LIMIT_MULT = 1.32;
 
+const float LMR_DIV = 3.5;
+const float LMR_BASE = 0.20;
+
 bool printSearchUpdates = true;
 
 // Reasons to terminate the search
@@ -48,6 +51,11 @@ int Negamax(
 int QSearch(
     chess::Board &position, int alpha, int beta, int ply, uint64_t &nodes
 );
+
+int reduction(int depth, int moveNum) {
+    if(moveNum < 4 || depth < 3) return 0;
+    return std::min(depth - 2, (int)round(log(depth) * log(moveNum) / LMR_DIV + LMR_BASE));
+}
 
 
 void perft(chess::Board &position, int depth, uint64_t &nodes);
