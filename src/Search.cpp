@@ -161,9 +161,16 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
             stack[ply+1].isPV = false;
 
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                result = -Negamax(newPosition, depth - 1 - reduction(depth, moves.curr), -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
             } else {
-                result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
+                result = Negamax(newPosition, depth - reduction(depth, moves.curr), alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
+            }
+            if(result > alpha && result < beta) {
+                if(newPosition.sideToMove() != position.sideToMove()) {
+                    result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                } else {
+                    result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
+                }
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {
