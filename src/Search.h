@@ -6,11 +6,14 @@ const int MAX_PLY = 256;
 const int INF = 999999;
 const int MATE = 10256;
 
-const float SOFT_LIMIT_MULT = 0.68;
-const float HARD_LIMIT_MULT = 1.32;
+float SOFT_LIMIT_MULT = 0.68;
+float HARD_LIMIT_MULT = 1.32;
 
-const float LMR_DIV = 3.5;
-const float LMR_BASE = 0.20;
+float LMR_DIV = 3.5;
+float LMR_BASE = 0.20;
+
+int LMR_MIN_DEPTH = 3;
+int LMR_MIN_MOVES = 4;
 
 bool printSearchUpdates = true;
 
@@ -53,8 +56,8 @@ int QSearch(
 );
 
 int reduction(int depth, int moveNum) {
-    if(moveNum < 4 || depth < 3) return 0;
-    return std::min(depth - 2, (int)round(log(depth) * log(moveNum) / LMR_DIV + LMR_BASE));
+    if(moveNum < LMR_MIN_MOVES || depth < LMR_MIN_DEPTH) return 0;
+    return std::min(depth - (LMR_MIN_DEPTH - 1), (int)round(log(depth) * log(moveNum) / LMR_DIV + LMR_BASE));
 }
 
 

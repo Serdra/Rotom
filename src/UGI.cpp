@@ -1,5 +1,25 @@
 #include "includes.h"
 
+int pround(float number) {
+    int lowerBound = std::floor(number);
+    float fractionalPart = number - lowerBound;
+    
+    // Create a random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+    
+    // Generate a random number between 0 and 1
+    float randomValue = dis(gen);
+    
+    // If the random value is less than the fractional part, round up
+    if (randomValue < fractionalPart) {
+        return lowerBound + 1;
+    } else {
+        return lowerBound;
+    }
+}
+
 void UGI() {
     int hashSize = 16;
 
@@ -28,6 +48,27 @@ void UGI() {
             // Control options here
             if(split[2] == "hash" || split[2] == "Hash") {
                 hashSize = std::stoi(split[4]);
+            }
+
+            if(split[2] == "SOFT_LIMIT_MULT") {
+                SOFT_LIMIT_MULT = std::stof(split[4]);
+            }
+            if(split[2] == "HARD_LIMIT_MULT") {
+                HARD_LIMIT_MULT = std::stof(split[4]);
+            }
+
+            if(split[2] == "LMR_DIV") {
+                LMR_DIV = round(std::stof(split[4]));
+            }
+            if(split[2] == "LMR_BASE") {
+                LMR_BASE = round(std::stof(split[4]));
+            }
+
+            if(split[2] == "LMR_MIN_DEPTH") {
+                LMR_MIN_DEPTH = pround(std::stof(split[4]));
+            }
+            if(split[2] == "LMR_MIN_MOVES") {
+                LMR_MIN_MOVES = pround(std::stof(split[4]));
             }
         }
         else if(split[0] == "quit") return;
