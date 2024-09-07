@@ -138,3 +138,10 @@ Score of Rotom-Dev vs Rotom-Master: 1767 - 1562 - 611 [0.526] 3940
 18.09 +/- 9.97
 SPRT: llr 2.95, lbound -2.94, ubound 2.94
 ```
+
+0.12.3 SPSA Search Tune
+```
+Score of Rotom-Dev vs Rotom-Master: 3388 - 3156 - 1196 [0.515] 7740
+10.42 +/- 7.11
+SPRT: llr 2.95, lbound -2.94, ubound 2.94
+```

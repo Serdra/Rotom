@@ -159,11 +159,11 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
             }
         } else {
             stack[ply+1].isPV = false;
-
+            int reduce = reduction(depth, moves.curr, stack[ply].isPV, position.at(move.to()) != chess::Piece::None, position.inCheck());
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1 - reduction(depth, moves.curr), -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                result = -Negamax(newPosition, depth - 1 - reduce, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
             } else {
-                result = Negamax(newPosition, depth - reduction(depth, moves.curr), alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
+                result = Negamax(newPosition, depth - reduce, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {

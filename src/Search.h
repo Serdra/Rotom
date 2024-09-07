@@ -6,14 +6,18 @@ const int MAX_PLY = 256;
 const int INF = 999999;
 const int MATE = 10256;
 
-float SOFT_LIMIT_MULT = 0.68;
-float HARD_LIMIT_MULT = 1.32;
+float SOFT_LIMIT_MULT = 0.703;
+float HARD_LIMIT_MULT = 1.331;
 
-float LMR_DIV = 3.5;
-float LMR_BASE = 0.20;
+float LMR_DIV = 3.299;
+float LMR_BASE = 0.211;
 
-int LMR_MIN_DEPTH = 3;
-int LMR_MIN_MOVES = 4;
+int LMR_MIN_DEPTH = 4;
+int LMR_MIN_MOVES = 3;
+
+float LMR_PV = -0.2;
+float LMR_CAP = -0.3;
+float LMR_CHECK = -0.2;
 
 bool printSearchUpdates = true;
 
@@ -55,9 +59,14 @@ int QSearch(
     chess::Board &position, int alpha, int beta, int ply, uint64_t &nodes
 );
 
-int reduction(int depth, int moveNum) {
+int reduction(int depth, int moveNum, bool isPV, bool isCap, bool inCheck) {
     if(moveNum < LMR_MIN_MOVES || depth < LMR_MIN_DEPTH) return 0;
-    return std::min(depth - (LMR_MIN_DEPTH - 1), (int)round(log(depth) * log(moveNum) / LMR_DIV + LMR_BASE));
+    float reduce = log(depth) * log(moveNum) / LMR_DIV + LMR_BASE;
+    // if(isPV) reduce += LMR_PV;
+    // if(isCap) reduce += LMR_CAP;
+    // if(inCheck) reduce += LMR_CHECK;
+    
+    return std::clamp((int)round(reduce), 0, depth - 2);
 }
 
 
