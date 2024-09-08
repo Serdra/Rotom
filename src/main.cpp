@@ -1,6 +1,7 @@
 #include "includes.h"
 
 int main() {
+    std::cout << sizeof(PackedBoard) << std::endl;
     buildPST();
     srand(time(0));
     std::string input;
@@ -104,6 +105,26 @@ int main() {
             uint64_t nodes = 0;
             perft(board, 6, nodes);
             std::cout << fen << " : " << nodes << std::endl;
+        }
+    }
+    if (input == "datagen") {
+        printSearchUpdates = false;
+
+        DataWriter writer("PSTData.bin");
+        std::mutex mtx;
+        int interval = 1;
+        int numThreads = 8;
+
+        std::vector<std::thread> threads;
+        for(int i = 0; i < numThreads; i++) {
+            threads.push_back(std::thread(generateData, std::ref(writer), std::ref(mtx), std::ref(interval), xorshift(18+i)));
+            cpu_set_t cpuset;
+            CPU_ZERO(&cpuset);
+            CPU_SET(i*2, &cpuset);
+            int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
+        }
+        for(int i = 0; i < numThreads; i++) {
+            threads[i].join();
         }
     }
 }
