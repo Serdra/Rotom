@@ -113,6 +113,8 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
 
     int static_eval = eval(position);
 
+    if(!stack[ply].isPV && !position.inCheck() && static_eval - RFP_BOUND * depth >= beta) return static_eval - RFP_BOUND * depth;
+
     if(!stack[ply].isPV && stack[ply].canDoNullMove && depth > 2 && !position.inCheck() && static_eval >= beta) {
         stack[ply+1].canDoNullMove = false;
         stack[ply+1].isPV = false;

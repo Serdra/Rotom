@@ -19,6 +19,8 @@ float LMR_PV = -0.2;
 float LMR_CAP = -0.3;
 float LMR_CHECK = -0.2;
 
+int RFP_BOUND = 80;
+
 bool printSearchUpdates = true;
 
 // Reasons to terminate the search
