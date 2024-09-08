@@ -106,4 +106,31 @@ int main() {
             std::cout << fen << " : " << nodes << std::endl;
         }
     }
+    else {
+        for(int i = 0; i < 18; i++) {
+            bool original = true;
+            bool printed = false;
+            for(int j = 0; j < 18; j++) {
+                bool print = true;
+                for(int k = 0; k < 18; k++) {
+                    if(pokemon::Type(k) == pokemon::Type::Bug) continue;
+                    if(pokemon::Type(k) == pokemon::Type::Electric) continue;
+                    if(pokemon::Type(k) == pokemon::Type::Dragon) continue;
+                    if(pokemon::Type(k) == pokemon::Type::Ghost) continue;
+                    if(pokemon::lookupMoveEffectiveness(pokemon::Type(k), pokemon::Type(i)) == pokemon::Effectiveness::SuperEffective) {
+                        if(pokemon::lookupMoveEffectiveness(pokemon::Type(k), pokemon::Type(j)) != pokemon::Effectiveness::Resist && 
+                        pokemon::lookupMoveEffectiveness(pokemon::Type(k), pokemon::Type(j)) != pokemon::Effectiveness::Immune) print = false;
+                    }
+                }
+                if(print && original) {
+                    std::cout << pokemon::typeToString(pokemon::Type(i)) << ": ";
+                    original = false;
+                    printed = true;
+                } if(print) {
+                    std::cout << pokemon::typeToString(pokemon::Type(j)) << " ";
+                }
+            }
+            if(printed) std::cout << std::endl;
+        }
+    }
 }
