@@ -237,6 +237,8 @@ int QSearch(chess::Board &position, int alpha, int beta, int ply, uint64_t &node
     chess::Move move;
 
     while(moves.nextCapture(move, position)) {
+        if(position.at(move.to()) != chess::Piece::None 
+            && pokemon::lookupMoveEffectiveness(position.typeAt(move.from()), position.typeAt(move.to())) == pokemon::Effectiveness::Immune) continue;
         chess::Board newPosition = position;
         newPosition.makeMove(move);
         nodes++;

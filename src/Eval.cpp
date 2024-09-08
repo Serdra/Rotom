@@ -31,5 +31,5 @@ int eval(chess::Board &position) {
         score_eg += PST_eg[piece * 64 + square];
     }
 
-    return ((score_mg * phase) + (score_eg * (24 - phase))) / 24;
+    return ((score_mg * phase) + (score_eg * (24 - phase))) / 24 + (position.hash() % 16 - 7);
 }
