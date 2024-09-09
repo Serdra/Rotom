@@ -1525,6 +1525,9 @@ public:
     int halfMoveClock() {
         return halfMoves;
     }
+    int fullMoveClock() {
+        return fullMoves;
+    }
 
     CastlingRights getCastlingRights() {
         return castlingRights;
