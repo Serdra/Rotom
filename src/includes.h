@@ -7,11 +7,17 @@
 #include <fstream>
 #include <mutex>
 #include <thread>
+#include <cstring>
+#include <cassert>
 
 #include "xorshift.h"
 
+#include "NNUE.h"
+
 #include "PokeChess/PokeChess.h"
 using namespace pokechess;
+
+#include "NNUE.cpp"
 
 #include "Eval.h"
 #include "Eval.cpp"

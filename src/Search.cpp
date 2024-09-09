@@ -32,6 +32,8 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
 
     while(true) {
         Stack stack[256];
+        fromScratch(stack[0].acc, position);
+
         if(depth == 1) 
             result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
         else {
@@ -80,7 +82,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     }
 
     // If the position is not game over, we check the base case (this is a recursive algorithm after all)
-    if(depth <= 0 || ply > MAX_PLY) return QSearch(position, alpha, beta, ply, nodes);
+    if(depth <= 0 || ply > MAX_PLY) return QSearch(position, alpha, beta, ply, stack, nodes);
 
     TTEntry entry = TT.probe(position.hash());
     if(entry.hash == position.hash() && entry.depth >= depth && !stack[ply].isPV) {
@@ -111,11 +113,12 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         return 0;
     }
 
-    int static_eval = eval(position);
+    int static_eval = stack[ply].acc.eval(position.sideToMove() == chess::Color::White);
 
     if(!stack[ply].isPV && !position.inCheck() && static_eval - RFP_BOUND * depth >= beta) return static_eval - RFP_BOUND * depth;
 
     if(!stack[ply].isPV && stack[ply].canDoNullMove && depth > 2 && !position.inCheck() && static_eval >= beta) {
+        stack[ply+1].acc = stack[ply].acc;
         stack[ply+1].canDoNullMove = false;
         stack[ply+1].isPV = false;
 
@@ -142,9 +145,10 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
 
     while(moves.next(move, position)) {
         stack[ply+1].pv.moves.clear();
+        stack[ply+1].acc = stack[ply].acc;
         // I prefer copy-make to make-unmake
         chess::Board newPosition = position;
-        newPosition.makeMove(move);
+        newPosition.makeMove(move, stack[ply+1].acc);
 
         nodes++;
 
@@ -222,14 +226,14 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     return bestMoveValue;
 }
 
-int QSearch(chess::Board &position, int alpha, int beta, int ply, uint64_t &nodes) {
+int QSearch(chess::Board &position, int alpha, int beta, int ply, Stack* stack, uint64_t &nodes) {
     if(position.isGameOver() != chess::GameResult::NONE) {
         if(position.isGameOver() == chess::GameResult::WIN) return MATE - ply;
         if(position.isGameOver() == chess::GameResult::LOSE) return -(MATE - ply);
         return 0;
     }
 
-    int static_eval = eval(position);
+    int static_eval = stack[ply].acc.eval(position.sideToMove() == chess::Color::White);
     if(static_eval >= beta) return static_eval;
     alpha = std::max(alpha, static_eval);
 
@@ -239,15 +243,19 @@ int QSearch(chess::Board &position, int alpha, int beta, int ply, uint64_t &node
     while(moves.nextCapture(move, position)) {
         if(position.at(move.to()) != chess::Piece::None 
             && pokemon::lookupMoveEffectiveness(position.typeAt(move.from()), position.typeAt(move.to())) == pokemon::Effectiveness::Immune) continue;
+        
+        stack[ply+1].acc = stack[ply].acc;
+        // I prefer copy-make to make-unmake
         chess::Board newPosition = position;
-        newPosition.makeMove(move);
+        newPosition.makeMove(move, stack[ply+1].acc);
+
         nodes++;
         int value;
 
         if(newPosition.sideToMove() != position.sideToMove()) {
-            value = -QSearch(newPosition, -beta, -alpha, ply + 1, nodes);
+            value = -QSearch(newPosition, -beta, -alpha, ply + 1, stack, nodes);
         } else {
-            value = QSearch(newPosition, alpha, beta, ply + 1, nodes);
+            value = QSearch(newPosition, alpha, beta, ply + 1, stack, nodes);
         }
 
         if(value >= beta) return beta;
