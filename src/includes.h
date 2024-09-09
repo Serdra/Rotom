@@ -4,6 +4,11 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <fstream>
+#include <mutex>
+#include <thread>
+
+#include "xorshift.h"
 
 #include "PokeChess/PokeChess.h"
 using namespace pokechess;
@@ -19,3 +24,7 @@ using namespace pokechess;
 #include "Search.cpp"
 
 #include "UGI.cpp"
+
+#include "Writer.h"
+#include "Generation.h"
+#include "Generation.cpp"
