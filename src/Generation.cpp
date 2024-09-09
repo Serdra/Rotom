@@ -32,7 +32,7 @@ PackedBoard packBoard(chess::Board &position) {
     return ret;
 }
 
-void generateData(DataWriter &writer, std::mutex &mtx, int &interval, xorshift rng) {
+void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, xorshift rng) {
     TransTable table(16);
     History hist;
 
@@ -62,6 +62,10 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, xorshift r
             }
 
             mtx.lock();
+            if(result == 1) wdl.whiteWins++;
+            else if(result == -1) wdl.blackWins++;
+            else wdl.draws++;
+
             writer.writeData(gameData);
             if(writer.positionsWritten >= (interval * 10000)) {
                 auto elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -69,7 +73,10 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, xorshift r
 
                 std::cout << "Positions generated: " << writer.positionsWritten << std::endl;
                 std::cout << "Time Taken: " << u/1000 << "s" << std::endl;
-                std::cout << "Speed: " << (writer.positionsWritten) / (u/1000) << "p/s" << std::endl << std::endl;
+                std::cout << "Speed: " << (writer.positionsWritten) / (u/1000) << "p/s" << std::endl;
+                std::cout << "White wins: " << wdl.whiteWins << std::endl;
+                std::cout << "Black wins: " << wdl.blackWins << std::endl;
+                std::cout << "Draws: " << wdl.draws << std::endl << std::endl;
                 interval++;
             }
             mtx.unlock();

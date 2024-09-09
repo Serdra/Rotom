@@ -8,7 +8,7 @@ struct PackedBoard {
 
     // piece / 12 = pokemon type
     // piece % 12 = piece type
-    uint8_t pieces[16] = {0}; 
+    uint8_t pieces[32] = {0}; 
 
     // Eval is not stm relative
     int16_t eval = 0;
