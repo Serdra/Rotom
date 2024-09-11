@@ -6,7 +6,7 @@ int pieceSwap[12] = {6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5};
 namespace nnue {
     const int size = 16;
 
-    int16_t hiddenWeights[18][768][size];
+    int16_t hiddenWeights[13824][size];
     int16_t hiddenBias[size];
 
     int16_t outputWeights[size * 2];
@@ -26,12 +26,12 @@ namespace nnue {
             assert(piece < 12);
             assert(sq < 64);
             for(int i = 0; i < size; i++) {
-                white[i] -= hiddenWeights[type][piece * 64 + sq][i];
+                white[i] -= hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
             sq ^= 56;
             piece = pieceSwap[piece];
             for(int i = 0; i < size; i++) {
-                black[i] -= hiddenWeights[type][piece * 64 + sq][i];
+                black[i] -= hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
         }
 
@@ -40,12 +40,12 @@ namespace nnue {
             assert(piece < 12);
             assert(sq < 64);
             for(int i = 0; i < size; i++) {
-                white[i] += hiddenWeights[type][piece * 64 + sq][i];
+                white[i] += hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
             sq ^= 56;
             piece = pieceSwap[piece];
             for(int i = 0; i < size; i++) {
-                black[i] += hiddenWeights[type][piece * 64 + sq][i];
+                black[i] += hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
         }
 
@@ -89,26 +89,25 @@ namespace nnue {
         float temp;
         std::ifstream inFile(fileName, std::ios::in | std::ios::binary);
 
-        for(int i = 0; i < 18; i++) {
-            for(int j = 0; j < 768; j++) {
-                for(int k = 0; k < size; k++) {
-                    inFile.read((char*) &temp, sizeof(temp));
-                    hiddenWeights[i][j][k] = std::round(128 * temp);
-                }
-            }
-        }
-
         for(int i = 0; i < size; i++) {
             inFile.read((char*) &temp, sizeof(temp));
             hiddenBias[i] = std::round(128 * temp);
         }
 
+        for(int i = 0; i < 13824; i++) {
+            for(int j = 0; j < size; j++) {
+                inFile.read((char*) &temp, sizeof(temp));
+                hiddenWeights[i][j] = std::round(128 * temp);
+            }
+        }
+
+
+        inFile.read((char*) &temp, sizeof(temp));
+        outputBias = std::round(128 * temp);
+
         for(int i = 0; i < size*2; i++) {
             inFile.read((char*) &temp, sizeof(temp));
             outputWeights[i] = std::round(128 * temp);
         }
-
-        inFile.read((char*) &temp, sizeof(temp));
-        outputBias = std::round(128 * temp);
     }
 };

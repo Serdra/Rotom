@@ -1,7 +1,7 @@
 #include "includes.h"
 
 int main() {
-    nnue::init("dev.nnue");
+    nnue::init("params.nnue");
     buildPST();
     srand(time(0));
     std::string input;
