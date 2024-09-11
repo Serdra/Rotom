@@ -72,7 +72,7 @@ namespace nnue {
                 }
             }
 
-            return value / (128 * 128);
+            return value / (81);
         }
 
         bool operator!=(Accumulator &rhs) const {
