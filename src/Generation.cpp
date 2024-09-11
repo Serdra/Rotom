@@ -52,14 +52,16 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
         if(pos.isGameOver() != chess::GameResult::NONE || pos.fullMoveClock() > 400) {
             int8_t result = 0;
 
-            if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::White) result = 1;
+            if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::White) result =  1;
             if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::Black) result = -1;
             if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::White) result = -1;
-            if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::Black) result = 1;
+            if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::Black) result =  1;
 
             for(int i = 0; i < gameData.size(); i++) {
                 gameData[i].wdl = result;
             }
+
+            std::cout << "Winner: " << (int)result << std::endl << std::endl << std::endl;
 
             mtx.lock();
             if(result == 1) wdl.whiteWins++;
@@ -92,7 +94,27 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
 
         searchResult = IterativeDeepening(pos, StopType::Nodes, HARD_NODES, table, hist);
         PackedBoard pb = packBoard(pos);
-        if(abs(searchResult.second) < 10000 && pos.at(searchResult.first.to()) == chess::Piece::None) gameData.push_back(pb);
+        unpackBoard(pb);
+        std::cout << pos << std::endl;
+        eval(pos);
+        if(abs(searchResult.second) < 10000 && pos.at(searchResult.first.to()) == chess::Piece::None)  {
+            gameData.push_back(pb);
+            std::cout << pos.getFen() << " | " << searchResult.first << " | " << searchResult.second << std::endl;
+        }
         pos.makeMove(searchResult.first);
     }
+}
+
+void unpackBoard(PackedBoard position) {
+    int idx = 0;
+    while(position.occupied) {
+        int sq = chess::builtin::poplsb(position.occupied);
+        int piece = position.pieces[idx];
+        int type = piece / 12;
+        piece %= 12;
+
+        std::cout << "Type: " << type << " Feature: " << piece * 64 + sq << std::endl;
+        idx++;
+    }
+    std::cout << "Flags: " << (int)position.flags << std::endl;
 }

@@ -117,6 +117,7 @@ int main() {
         WDL wdl;
 
         std::vector<std::thread> threads;
+        generateData(writer, mtx, interval, wdl, xorshift(192));
         for(int i = 0; i < numThreads; i++) {
             threads.push_back(std::thread(generateData, std::ref(writer), std::ref(mtx), std::ref(interval), std::ref(wdl), xorshift(18+i)));
             cpu_set_t cpuset;

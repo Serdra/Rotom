@@ -15,4 +15,6 @@ chess::Board generateStartingPosition(xorshift &rng);
 
 PackedBoard packBoard(chess::Board &position);
 
+void unpackBoard(PackedBoard position);
+
 void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, xorshift rng);
