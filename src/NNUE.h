@@ -6,24 +6,24 @@ int pieceSwap[12] = {6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5};
 namespace nnue {
     const int size = 16;
 
-    float hiddenWeights[13824][size];
-    float hiddenBias[size];
+    int16_t hiddenWeights[13824][size];
+    int16_t hiddenBias[size];
 
-    float outputWeights[size * 2];
-    float outputBias;
+    int16_t outputWeights[size * 2];
+    int16_t outputBias;
 
     struct Accumulator {
-        float white[size];
-        float black[size];
+        int16_t white[size];
+        int16_t black[size];
 
         Accumulator() {
-            memcpy(white, hiddenBias, sizeof(float) * size);
-            memcpy(black, hiddenBias, sizeof(float) * size);
+            memcpy(white, hiddenBias, sizeof(int16_t) * size);
+            memcpy(black, hiddenBias, sizeof(int16_t) * size);
         }
 
         void clear() {
-            memcpy(white, hiddenBias, sizeof(float) * size);
-            memcpy(black, hiddenBias, sizeof(float) * size);
+            memcpy(white, hiddenBias, sizeof(int16_t) * size);
+            memcpy(black, hiddenBias, sizeof(int16_t) * size);
         }
 
         void sub(int type, int piece, int sq) {
@@ -54,12 +54,12 @@ namespace nnue {
             }
         }
 
-        float relu(float x) {
-            return std::max(x, (float)0);
+        int relu(int16_t x) {
+            return std::max(x, (int16_t)0);
         }
 
-        float eval(bool isWhite) {
-            float value = outputBias;
+        int eval(bool isWhite) {
+            int value = outputBias;
 
             if(isWhite) {
                 for(int i = 0; i < size; i++) {
@@ -96,21 +96,21 @@ namespace nnue {
         for(int i = 0; i < 13824; i++) {
             for(int j = 0; j < size; j++) {
                 inFile.read((char*) &temp, sizeof(temp));
-                hiddenWeights[i][j] =  (128 * temp);
+                hiddenWeights[i][j] = std::round(128 * temp);
             }
         }
 
         for(int i = 0; i < size; i++) {
             inFile.read((char*) &temp, sizeof(temp));
-            hiddenBias[i] =  (128 * temp);
+            hiddenBias[i] = std::round(128 * temp);
         }
 
         for(int i = 0; i < size*2; i++) {
             inFile.read((char*) &temp, sizeof(temp));
-            outputWeights[i] =  (128 * temp);
+            outputWeights[i] = std::round(128 * temp);
         }
 
         inFile.read((char*) &temp, sizeof(temp));
-        outputBias =  (128 * 128 * temp);
+        outputBias = std::round(128 * 128 * temp);
     }
 };
