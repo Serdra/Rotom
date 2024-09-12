@@ -6,19 +6,24 @@ int pieceSwap[12] = {6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5};
 namespace nnue {
     const int size = 16;
 
-    int16_t hiddenWeights[13824][size];
-    int16_t hiddenBias[size];
+    float hiddenWeights[13824][size];
+    float hiddenBias[size];
 
-    int16_t outputWeights[size * 2];
-    int16_t outputBias;
+    float outputWeights[size * 2];
+    float outputBias;
 
     struct Accumulator {
-        int16_t white[size];
-        int16_t black[size];
+        float white[size];
+        float black[size];
 
         Accumulator() {
-            memcpy(white, hiddenBias, sizeof(int16_t) * size);
-            memcpy(black, hiddenBias, sizeof(int16_t) * size);
+            memcpy(white, hiddenBias, sizeof(float) * size);
+            memcpy(black, hiddenBias, sizeof(float) * size);
+        }
+
+        void clear() {
+            memcpy(white, hiddenBias, sizeof(float) * size);
+            memcpy(black, hiddenBias, sizeof(float) * size);
         }
 
         void sub(int type, int piece, int sq) {
@@ -29,7 +34,7 @@ namespace nnue {
                 white[i] -= hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
             sq ^= 56;
-            piece = pieceSwap[piece];
+            piece = (piece + 6) % 12;
             for(int i = 0; i < size; i++) {
                 black[i] -= hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
@@ -43,18 +48,18 @@ namespace nnue {
                 white[i] += hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
             sq ^= 56;
-            piece = pieceSwap[piece];
+            piece = (piece + 6) % 12;
             for(int i = 0; i < size; i++) {
                 black[i] += hiddenWeights[type * 768 + piece * 64 + sq][i];
             }
         }
 
-        int16_t relu(int16_t x) {
-            return std::max(x, (int16_t)0);
+        float relu(float x) {
+            return std::max(x, (float)0);
         }
 
-        int eval(bool isWhite) {
-            int value = outputBias;
+        float eval(bool isWhite) {
+            float value = outputBias;
 
             if(isWhite) {
                 for(int i = 0; i < size; i++) {
@@ -71,8 +76,7 @@ namespace nnue {
                     value += relu(white[i]) * outputWeights[size + i];
                 }
             }
-
-            return value / (81);
+            return (value * 200) / (128 * 128);
         }
 
         bool operator!=(Accumulator &rhs) const {
@@ -89,25 +93,24 @@ namespace nnue {
         float temp;
         std::ifstream inFile(fileName, std::ios::in | std::ios::binary);
 
-        for(int i = 0; i < size; i++) {
-            inFile.read((char*) &temp, sizeof(temp));
-            hiddenBias[i] = std::round(128 * temp);
-        }
-
         for(int i = 0; i < 13824; i++) {
             for(int j = 0; j < size; j++) {
                 inFile.read((char*) &temp, sizeof(temp));
-                hiddenWeights[i][j] = std::round(128 * temp);
+                hiddenWeights[i][j] =  (128 * temp);
             }
         }
 
-
-        inFile.read((char*) &temp, sizeof(temp));
-        outputBias = std::round(128 * temp);
+        for(int i = 0; i < size; i++) {
+            inFile.read((char*) &temp, sizeof(temp));
+            hiddenBias[i] =  (128 * temp);
+        }
 
         for(int i = 0; i < size*2; i++) {
             inFile.read((char*) &temp, sizeof(temp));
-            outputWeights[i] = std::round(128 * temp);
+            outputWeights[i] =  (128 * temp);
         }
+
+        inFile.read((char*) &temp, sizeof(temp));
+        outputBias =  (128 * 128 * temp);
     }
 };

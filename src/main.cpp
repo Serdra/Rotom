@@ -127,5 +127,18 @@ int main() {
         for(int i = 0; i < numThreads; i++) {
             threads[i].join();
         }
+    } else {
+        chess::Board pos("rmnmbm1kmbmnmrm/pmpmpmpmpmpmpmpm/8/8/8/8/PmPmPmPmPmPmPmPm/RmNmBmQmKmBmNmRm w - - 0 1 -", false);
+        nnue::Accumulator acc;
+        fromScratch(acc, pos);
+        std::cout << acc.eval(true) << std::endl;
+
+        pos = chess::Board("renfbtqikmbgnlru/pzpspcpwpopxpapd/8/8/8/8/PdPfPmPyPwPuPzPc/RiNaBtQgKxBoNlRl w - - 0 1 -", false);
+        fromScratch(acc, pos);
+        std::cout << acc.eval(true) << std::endl;
+
+        pos = chess::Board("3rirw1ko1/5pz2/bdnfqx1pmQfph1/pe1pg1Px2pa/Pepl5Ps/1BoPc1NzNyKl1/5PmPh1/3Rd4 w - - 0 1 -", false);
+        fromScratch(acc, pos);
+        std::cout << acc.eval(true) << std::endl;
     }
 }

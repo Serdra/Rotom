@@ -2,6 +2,7 @@
 #include "includes.h"
 
 void fromScratch(nnue::Accumulator &acc, chess::Board &position) {
+    acc.clear();
     chess::Bitboard occ = position.all();
     while(occ) {
         int square = chess::builtin::poplsb(occ);
