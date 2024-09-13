@@ -41,11 +41,7 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
     gameData.reserve(300);
 
     chess::Board pos = generateStartingPosition(rng);
-    std::pair<chess::Move, int> searchResult = IterativeDeepening(pos, StopType::Nodes, HARD_NODES, table, hist);
-    while(abs(searchResult.second) > 200) {
-        pos = generateStartingPosition(rng);
-        searchResult = IterativeDeepening(pos, StopType::Nodes, HARD_NODES, table, hist);
-    }
+    std::pair<chess::Move, int> searchResult;
 
     // TODO: Add adjudication?
     while(true) {
@@ -60,8 +56,6 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
             for(int i = 0; i < gameData.size(); i++) {
                 gameData[i].wdl = result;
             }
-
-            std::cout << "Winner: " << (int)result << std::endl << std::endl << std::endl;
 
             mtx.lock();
             if(result == 1) wdl.whiteWins++;
@@ -86,35 +80,15 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
             gameData.clear();
 
             pos = generateStartingPosition(rng);
-            while(abs(searchResult.second) > 200) {
-                pos = generateStartingPosition(rng);
-                searchResult = IterativeDeepening(pos, StopType::Nodes, HARD_NODES, table, hist);
-            }
         }
 
         searchResult = IterativeDeepening(pos, StopType::Nodes, HARD_NODES, table, hist);
         PackedBoard pb = packBoard(pos);
-        unpackBoard(pb);
-        std::cout << pos << std::endl;
-        eval(pos);
         if(abs(searchResult.second) < 10000 && pos.at(searchResult.first.to()) == chess::Piece::None)  {
+            pb.eval = searchResult.second;
             gameData.push_back(pb);
             std::cout << pos.getFen() << " | " << searchResult.first << " | " << searchResult.second << std::endl;
         }
         pos.makeMove(searchResult.first);
     }
-}
-
-void unpackBoard(PackedBoard position) {
-    int idx = 0;
-    while(position.occupied) {
-        int sq = chess::builtin::poplsb(position.occupied);
-        int piece = position.pieces[idx];
-        int type = piece / 12;
-        piece %= 12;
-
-        std::cout << "Type: " << type << " Feature: " << piece * 64 + sq << std::endl;
-        idx++;
-    }
-    std::cout << "Flags: " << (int)position.flags << std::endl;
 }
