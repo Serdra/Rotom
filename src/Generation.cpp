@@ -87,7 +87,6 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
         if(abs(searchResult.second) < 10000 && pos.at(searchResult.first.to()) == chess::Piece::None)  {
             pb.eval = searchResult.second;
             gameData.push_back(pb);
-            std::cout << pos.getFen() << " | " << searchResult.first << " | " << searchResult.second << std::endl;
         }
         pos.makeMove(searchResult.first);
     }
