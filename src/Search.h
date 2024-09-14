@@ -47,6 +47,7 @@ struct Stack {
     bool canDoNullMove = true;
     PV pv;
     chess::Move killers[2];
+    nnue::Accumulator acc;
 };
 
 std::pair<chess::Move, int> IterativeDeepening(
@@ -58,7 +59,7 @@ int Negamax(
 );
 
 int QSearch(
-    chess::Board &position, int alpha, int beta, int ply, uint64_t &nodes
+    chess::Board &position, int alpha, int beta, int ply, Stack* stack, uint64_t &nodes
 );
 
 int reduction(int depth, int moveNum, bool isPV, bool isCap, bool inCheck) {

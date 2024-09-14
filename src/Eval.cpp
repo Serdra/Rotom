@@ -12,24 +12,7 @@ void buildPST() {
 }
 
 int eval(chess::Board &position) {
-    int score_mg = 0;
-    int score_eg = 0;
-    int phase = 0;
-    chess::Bitboard occupied = position.all();
-
-    while(occupied) {
-        int square = chess::builtin::poplsb(occupied);
-        int piece = (int)position.at(square);
-
-        if(position.sideToMove() == chess::Color::Black) {
-            square ^= 56;
-            piece = pieceSwap[piece];
-        }
-
-        phase += phaseScore[piece % 6];
-        score_mg += PST_mg[piece * 64 + square];
-        score_eg += PST_eg[piece * 64 + square];
-    }
-
-    return ((score_mg * phase) + (score_eg * (24 - phase))) / 24;
+    nnue::Accumulator acc;
+    fromScratch(acc, position);
+    return acc.eval(position.sideToMove() == chess::Color::White);
 }
