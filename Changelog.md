@@ -38,7 +38,7 @@ SPRT: llr 2.95, lbound -2.94, ubound 2.94
 ```
 
 
-0.6.0 TT Cutoffs
+0.6.0 TT Move ordering
 ```
 Score of Rotom-Dev vs Rotom-Master: 325 - 130 - 28 [0.702] 483
 148.73 +/- 32.77
