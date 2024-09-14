@@ -2,7 +2,6 @@
 
 int main() {
     nnue::init("params.nnue");
-    buildPST();
     srand(time(0));
     std::string input;
     std::getline(std::cin, input);

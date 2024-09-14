@@ -19,9 +19,6 @@ using namespace pokechess;
 
 #include "NNUE.cpp"
 
-#include "Eval.h"
-#include "Eval.cpp"
-
 #include "Movepicker.cpp"
 
 #include "TT.cpp"
