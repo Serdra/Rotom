@@ -3,7 +3,7 @@
 
 const int NUM_STARTING_MOVES = 6;
 const int SOFT_NODES = 35000;
-const int HARD_NODES = 100000;
+const int HARD_NODES = 70000;
 
 struct WDL {
     uint64_t whiteWins = 0;

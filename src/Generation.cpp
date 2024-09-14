@@ -42,6 +42,12 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
 
     chess::Board pos = generateStartingPosition(rng);
     std::pair<chess::Move, int> searchResult;
+    searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+    while(searchResult.second > 200) {
+        chess::Board pos = generateStartingPosition(rng);
+        searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+    }
+
 
     // TODO: Add adjudication?
     while(true) {
@@ -80,6 +86,11 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
             gameData.clear();
 
             pos = generateStartingPosition(rng);
+            searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+            while(searchResult.second > 200) {
+                chess::Board pos = generateStartingPosition(rng);
+                searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+            }
         }
 
         searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
