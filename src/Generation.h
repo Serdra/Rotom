@@ -2,8 +2,8 @@
 #include "includes.h"
 
 const int NUM_STARTING_MOVES = 6;
-const int SOFT_NODES = 15000;
-const int HARD_NODES = 50000;
+const int SOFT_NODES = 35000;
+const int HARD_NODES = 100000;
 
 struct WDL {
     uint64_t whiteWins = 0;

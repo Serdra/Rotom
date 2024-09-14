@@ -22,7 +22,7 @@ int main() {
                     pos.makeMove(moves[rand() % moves.size()]);
                 }
                 if(pos.isGameOver() == chess::GameResult::NONE) {
-                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1000, TT, Hist);
+                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1500, 2500, TT, Hist);
                     if(abs(result.second) < 250) {
                         std::cout << pos.getFen() << std::endl;
                         break;
@@ -49,7 +49,7 @@ int main() {
         std::vector<std::string> moves = chess::splitString(moveStrings, ' ');
 
         int moveTime = 1000;
-        std::pair<chess::Move, int> prevResult = IterativeDeepening(position, StopType::Time, moveTime, TT, Hist);
+        std::pair<chess::Move, int> prevResult = IterativeDeepening(position, StopType::Time, moveTime, moveTime*2, TT, Hist);
 
         // Validate moves
         for(int i = 0; i < moves.size() && position.isGameOver() == chess::GameResult::NONE; i++) {
@@ -72,7 +72,7 @@ int main() {
         position = chess::Board(startingFen, false);
         for(int i = 0; i < moves.size() && position.isGameOver() == chess::GameResult::NONE; i++) {
             position.makeMove(chess::fromUGI(position, moves[i]));
-            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime, TT, Hist);
+            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime, moveTime * 2, TT, Hist);
             if(-result.second < (prevResult.second - 80) && (position.getSE() == 64) && prevResult.first != chess::fromUGI(position, moves[i])) {
                 std::cout << "Potential blunder " << moves[i] << " best move was " << prevResult.first << " loss " << prevResult.second + result.second << std::endl;
             }

@@ -189,16 +189,17 @@ void UGI() {
 
             std::pair<chess::Move, int> bestMove;
 
-            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0, TT, Hist);
+            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0, 0, TT, Hist);
             if(stopType == StopType::Time) {
                 if(mTime == -1) {
-                    bestMove = IterativeDeepening(pos, stopType, std::min(timeRemaining / 2, (timeRemaining / 30) + incTime), TT, Hist);
+                    int ttm = std::min(timeRemaining / 2, (timeRemaining / 30) + incTime);
+                    bestMove = IterativeDeepening(pos, stopType, ttm * SOFT_LIMIT_MULT, ttm * HARD_LIMIT_MULT, TT, Hist);
                 } else {
-                    bestMove = IterativeDeepening(pos, stopType, mTime, TT, Hist);
+                    bestMove = IterativeDeepening(pos, stopType, mTime, mTime, TT, Hist);
                 }
             }
-            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes, TT, Hist);
-            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth, TT, Hist);
+            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes, nodes, TT, Hist);
+            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth, depth, TT, Hist);
 
             std::cout << "bestmove " << bestMove.first << std::endl;
         }

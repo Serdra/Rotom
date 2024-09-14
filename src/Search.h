@@ -51,7 +51,7 @@ struct Stack {
 };
 
 std::pair<chess::Move, int> IterativeDeepening(
-    chess::Board position, StopType stop, int stopValue, TransTable &TT, History &Hist
+    chess::Board position, StopType stop, int softStopValue, int hardStopValue, TransTable &TT, History &Hist
 );
 
 int Negamax(

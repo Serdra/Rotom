@@ -1,6 +1,6 @@
 #include "includes.h"
 
-std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int stopValue, TransTable &TT, History &Hist) {
+std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int softStopValue, int hardStopValue, TransTable &TT, History &Hist) {
     auto start = std::chrono::high_resolution_clock::now();
 
     for(int i = 0; i < 2; i++) {
@@ -12,13 +12,13 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     }
 
     std::chrono::time_point<std::chrono::high_resolution_clock> hardTime, softTime;
-    softTime = start + std::chrono::milliseconds((int)(stopValue * SOFT_LIMIT_MULT));
-    hardTime = start + std::chrono::milliseconds((int)(stopValue * HARD_LIMIT_MULT));
+    softTime = start + std::chrono::milliseconds(softStopValue);
+    hardTime = start + std::chrono::milliseconds(hardStopValue);
 
     SearchSettings settings;
 
     settings.stop = stop;
-    settings.nodes = stopValue;
+    settings.nodes = hardStopValue;
     settings.endTime = hardTime;
     settings.timeout = false;
 
@@ -63,8 +63,8 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
         if(settings.timeout) break;
         
         if(stop == StopType::Time && std::chrono::high_resolution_clock::now() >= softTime) break;
-        if(stop == StopType::Nodes && nodes >= stopValue) break;
-        if(stop == StopType::Depth && depth >= stopValue) break;
+        if(stop == StopType::Nodes && nodes >= softStopValue) break;
+        if(stop == StopType::Depth && depth >= softStopValue) break;
         if(depth > MAX_DEPTH) break;
 
         depth++;

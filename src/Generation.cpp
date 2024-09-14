@@ -45,7 +45,7 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
 
     // TODO: Add adjudication?
     while(true) {
-        if(pos.isGameOver() != chess::GameResult::NONE || pos.fullMoveClock() > 400) {
+        if(pos.isGameOver() != chess::GameResult::NONE || pos.fullMoveClock() > 200) {
             int8_t result = 0;
 
             if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::White) result =  1;
@@ -82,7 +82,7 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
             pos = generateStartingPosition(rng);
         }
 
-        searchResult = IterativeDeepening(pos, StopType::Nodes, HARD_NODES, table, hist);
+        searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
         PackedBoard pb = packBoard(pos);
         if(abs(searchResult.second) < 10000 && pos.at(searchResult.first.to()) == chess::Piece::None)  {
             pb.eval = searchResult.second;
