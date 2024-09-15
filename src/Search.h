@@ -21,6 +21,8 @@ float LMR_CHECK = -0.2;
 
 int RFP_BOUND = 80;
 
+int ASPIRATION_WINDOW = 30;
+
 bool printSearchUpdates = true;
 
 // Reasons to terminate the search

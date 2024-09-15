@@ -37,8 +37,8 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
         if(depth == 1) 
             result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
         else {
-            result = Negamax(position, depth, evaluation - 30, evaluation + 30, 0, stack, settings, TT, Hist, nodes);
-            if(result <= (evaluation - 30) || result >= (evaluation + 30)) {
+            result = Negamax(position, depth, evaluation - ASPIRATION_WINDOW, evaluation + ASPIRATION_WINDOW, 0, stack, settings, TT, Hist, nodes);
+            if(result <= (evaluation - ASPIRATION_WINDOW) || result >= (evaluation + ASPIRATION_WINDOW)) {
                 result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
             }
         }
