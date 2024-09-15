@@ -1,7 +1,7 @@
 #include "includes.h"
 
 int main() {
-    nnue::init("params.nnue");
+    nnue::init("master.nnue");
     srand(time(0));
     std::string input;
     std::getline(std::cin, input);

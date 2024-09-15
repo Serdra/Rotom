@@ -24,10 +24,12 @@ void UGI() {
     int hashSize = 16;
 
     std::string command;
+    std::string nnue_path = "master.nnue";
 
     std::cout << "id name Rotom" << std::endl;
     std::cout << "id author Serdra" << std::endl;
     std::cout << "option name hash type spin default 16" << std::endl;
+    std::cout << "option name nnue_path type string default master.nnue" << std::endl;
     std::cout << "ugiok" << std::endl;
 
     // Deals with option setting
@@ -49,26 +51,8 @@ void UGI() {
             if(split[2] == "hash" || split[2] == "Hash") {
                 hashSize = std::stoi(split[4]);
             }
-
-            if(split[2] == "SOFT_LIMIT_MULT") {
-                SOFT_LIMIT_MULT = std::stof(split[4]);
-            }
-            if(split[2] == "HARD_LIMIT_MULT") {
-                HARD_LIMIT_MULT = std::stof(split[4]);
-            }
-
-            if(split[2] == "LMR_DIV") {
-                LMR_DIV = round(std::stof(split[4]));
-            }
-            if(split[2] == "LMR_BASE") {
-                LMR_BASE = round(std::stof(split[4]));
-            }
-
-            if(split[2] == "LMR_MIN_DEPTH") {
-                LMR_MIN_DEPTH = pround(std::stof(split[4]));
-            }
-            if(split[2] == "LMR_MIN_MOVES") {
-                LMR_MIN_MOVES = pround(std::stof(split[4]));
+            if(split[2] == "nnue_path") {
+                nnue_path = split[4];
             }
         }
         else if(split[0] == "quit") return;
@@ -77,6 +61,8 @@ void UGI() {
     TransTable TT(hashSize);
     History Hist;
     chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
+    nnue::init(nnue_path);
+
     while(true) {
         if(!getline(std::cin, command)) return;
         std::vector<std::string> split = pokechess::chess::splitString(command, ' ');
