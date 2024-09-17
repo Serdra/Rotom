@@ -10,6 +10,17 @@
 #include <cassert>
 #include <array>
 
+#if defined(_MSC_VER)
+#    include <intrin.h>
+#    include <nmmintrin.h>
+#endif
+
+#ifdef _MSC_VER
+#  include <intrin.h>
+#  define __builtin_popcount __popcnt
+#endif
+
+
 namespace pokechess {
 
 namespace pokemon {
@@ -406,13 +417,13 @@ inline Square msb(uint64_t b) {
 
 #ifdef _WIN64  // MSVC, WIN64
 #include <intrin.h>
-inline Square lsb(U64 b) {
+inline Square lsb(uint64_t b) {
     unsigned long idx;
     _BitScanForward64(&idx, b);
     return (Square)idx;
 }
 
-inline Square msb(U64 b) {
+inline Square msb(uint64_t b) {
     unsigned long idx;
     _BitScanReverse64(&idx, b);
     return (Square)idx;
@@ -420,7 +431,7 @@ inline Square msb(U64 b) {
 
 #else  // MSVC, WIN32
 #include <intrin.h>
-inline Square lsb(U64 b) {
+inline Square lsb(uint64_t b) {
     unsigned long idx;
 
     if (b & 0xffffffff) {
@@ -432,7 +443,7 @@ inline Square lsb(U64 b) {
     }
 }
 
-inline Square msb(U64 b) {
+inline Square msb(uint64_t b) {
     unsigned long idx;
 
     if (b >> 32) {
@@ -2422,7 +2433,7 @@ void legalquiets(Movelist &movelist, Board &board) {
 
 
 bool isMovePsuedoLegal(Board &board, Move move) {
-    if(board.getSE() != 64 && move.from() == 0 and move.to() == 0) return true;
+    if(board.getSE() != 64 && move.from() == 0 && move.to() == 0) return true;
     if(board.getSE() != 64 && board.getSE() != move.from()) return false;
     Piece moving = board.at(move.from());
     if(moving == Piece::None) return false;

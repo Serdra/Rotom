@@ -118,10 +118,6 @@ int main() {
         std::vector<std::thread> threads;
         for(int i = 0; i < numThreads; i++) {
             threads.push_back(std::thread(generateData, std::ref(writer), std::ref(mtx), std::ref(interval), std::ref(wdl), xorshift(0+i)));
-            cpu_set_t cpuset;
-            CPU_ZERO(&cpuset);
-            CPU_SET(i*2, &cpuset);
-            int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
         }
         for(int i = 0; i < numThreads; i++) {
             threads[i].join();
