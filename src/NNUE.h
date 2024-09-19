@@ -4,7 +4,7 @@
 int pieceSwap[12] = {6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5};
 
 namespace nnue {
-    const int size = 16;
+    const int size = 32;
 
     int16_t hiddenWeights[13824][size];
     int16_t hiddenBias[size];
