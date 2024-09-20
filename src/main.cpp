@@ -21,8 +21,8 @@ int main() {
                     pos.makeMove(moves[rand() % moves.size()]);
                 }
                 if(pos.isGameOver() == chess::GameResult::NONE) {
-                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1500, 2500, TT, Hist);
-                    if(abs(result.second) < 250) {
+                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 750, 1250, TT, Hist);
+                    if(abs(result.second) < 150) {
                         std::cout << pos.getFen() << std::endl;
                         break;
                     }
