@@ -144,6 +144,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     int alphaOrig = alpha;
 
     while(moves.next(move, position)) {
+        if(!stack[ply].isPV && depth <= 3 && moves.curr > depth*10) break;
         stack[ply+1].pv.moves.clear();
         stack[ply+1].acc = stack[ply].acc;
         // I prefer copy-make to make-unmake
