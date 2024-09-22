@@ -170,7 +170,7 @@ SPRT: llr 2.96, lbound -2.94, ubound 2.94
 ```
 
 
-0.15.1 No LMP in PV nodes
+0.15.1 LMP in PV nodes
 ```
 Score of Rotom-Dev vs Rotom-Master: 5043 - 4784 - 1840 [0.511] 11667
 7.71 +/- 5.78
