@@ -2097,7 +2097,7 @@ void Board::makeMove(Move move, nnue::Accumulator &acc) {
         if(interaction == pokemon::Effectiveness::Immune) goto nullmove;
         halfMoves = 0;
 
-        acc.sub((int)types_[move.to()], (int)at(move.to()), move.to());
+        acc.sub_((int)types_[move.to()], (int)at(move.to()), move.to());
         removePiece(captured, move.to());
         types_[move.to()] = pokemon::Type::None;
 
@@ -2117,7 +2117,7 @@ void Board::makeMove(Move move, nnue::Accumulator &acc) {
     if(move.typeOf() == Move::EnPassant) {
         interaction = pokemon::lookupMoveEffectiveness(typeAt(move.from()), typeAt(epSquare ^ 8));
         if(interaction == pokemon::Effectiveness::Immune) goto nullmove;
-        acc.sub((int)types_[Square(int(move.to()) ^ 8)], (int)Piece(((int)sideToMove_ ^ 1) * 6 + (int)PieceType::Pawn), int(move.to()) ^ 8);
+        acc.sub_((int)types_[Square(int(move.to()) ^ 8)], (int)Piece(((int)sideToMove_ ^ 1) * 6 + (int)PieceType::Pawn), int(move.to()) ^ 8);
         removePiece(Piece(((int)sideToMove_ ^ 1) * 6 + (int)PieceType::Pawn), Square(int(move.to()) ^ 8));
         types_[Square(int(move.to()) ^ 8)] = pokemon::Type::None;
     }
@@ -2166,14 +2166,14 @@ void Board::makeMove(Move move, nnue::Accumulator &acc) {
         const auto king = at(move.from());
         const auto rook = at(rookFrom);
         
-        acc.sub((int)types_[move.from()], (int)king, move.from());
-        acc.sub((int)types_[rookFrom], (int)rook, rookFrom);
+        acc.sub_((int)types_[move.from()], (int)king, move.from());
+        acc.sub_((int)types_[rookFrom], (int)rook, rookFrom);
 
         removePiece(king, move.from());
         removePiece(rook, rookFrom);
 
-        acc.add((int)types_[move.from()], (int)king, kingTo);
-        acc.add((int)types_[rookFrom], (int)rook, rookTo);
+        acc.add_((int)types_[move.from()], (int)king, kingTo);
+        acc.add_((int)types_[rookFrom], (int)rook, rookTo);
 
         placePiece(king, kingTo);
         placePiece(rook, rookTo);
@@ -2185,11 +2185,11 @@ void Board::makeMove(Move move, nnue::Accumulator &acc) {
         types_[rookFrom] = pokemon::Type::None;
     } 
     else if (move.typeOf() == Move::Promotion) {
-        acc.sub((int)types_[move.from()], (int)at(move.from()), move.from());
+        acc.sub_((int)types_[move.from()], (int)at(move.from()), move.from());
         removePiece(at(move.from()), move.from());
 
         if(interaction != pokemon::Effectiveness::Resist) {
-            acc.add((int)types_[move.from()], (int)move.promotionType() + int(sideToMove_ == Color::White ? 0 : 6), move.to());
+            acc.add_((int)types_[move.from()], (int)move.promotionType() + int(sideToMove_ == Color::White ? 0 : 6), move.to());
             placePiece((Piece)((int)move.promotionType() + int(sideToMove_ == Color::White ? 0 : 6)), move.to());
             types_[move.to()] = types_[move.from()];
         }
@@ -2198,11 +2198,11 @@ void Board::makeMove(Move move, nnue::Accumulator &acc) {
     else {
         auto piece = at(move.from());
 
-        acc.sub((int)types_[move.from()], int(piece), move.from());
+        acc.sub_((int)types_[move.from()], int(piece), move.from());
         removePiece(piece, move.from());
 
         if(interaction != pokemon::Effectiveness::Resist) {
-            acc.add((int)types_[move.from()], int(piece), move.to());
+            acc.add_((int)types_[move.from()], int(piece), move.to());
             placePiece(piece, move.to());
             types_[move.to()] = types_[move.from()];
         }
