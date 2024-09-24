@@ -5,6 +5,8 @@ int pieceSwap[12] = {6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5};
 
 namespace nnue {
     const int size = 32;
+    const int Q1 = 181;
+    const int Q2 = 255; 
 
     int16_t hiddenWeights[13824][size];
     int16_t hiddenBias[size];
@@ -54,8 +56,8 @@ namespace nnue {
             }
         }
 
-        int relu(int16_t x) {
-            return std::max(x, (int16_t)0);
+        int screlu(int16_t x) {
+            return std::clamp(x, (int16_t)0, (int16_t)Q1) * std::clamp(x, (int16_t)0, (int16_t)Q1);
         }
 
         int eval(bool isWhite) {
@@ -63,20 +65,21 @@ namespace nnue {
 
             if(isWhite) {
                 for(int i = 0; i < size; i++) {
-                    value += relu(white[i]) * outputWeights[i];
+                    value += screlu(white[i]) * outputWeights[i];
                 }
                 for(int i = 0; i < size; i++) {
-                    value += relu(black[i]) * outputWeights[size + i];
+                    value += screlu(black[i]) * outputWeights[size + i];
                 }
             } else {
                 for(int i = 0; i < size; i++) {
-                    value += relu(black[i]) * outputWeights[i];
+                    value += screlu(black[i]) * outputWeights[i];
                 }
                 for(int i = 0; i < size; i++) {
-                    value += relu(white[i]) * outputWeights[size + i];
+                    value += screlu(white[i]) * outputWeights[size + i];
                 }
             }
-            return (value * 200) / (128 * 128);
+            // Careful order of operation to not lose precision or overflow
+            return 200 * (value / (Q1 * Q1)) / Q2;
         }
 
         bool operator!=(Accumulator &rhs) const {
@@ -96,21 +99,21 @@ namespace nnue {
         for(int i = 0; i < 13824; i++) {
             for(int j = 0; j < size; j++) {
                 inFile.read((char*) &temp, sizeof(temp));
-                hiddenWeights[i][j] = std::round(128 * temp);
+                hiddenWeights[i][j] = std::round(Q1 * temp);
             }
         }
 
         for(int i = 0; i < size; i++) {
             inFile.read((char*) &temp, sizeof(temp));
-            hiddenBias[i] = std::round(128 * temp);
+            hiddenBias[i] = std::round(Q1 * temp);
         }
 
         for(int i = 0; i < size*2; i++) {
             inFile.read((char*) &temp, sizeof(temp));
-            outputWeights[i] = std::round(128 * temp);
+            outputWeights[i] = std::round(Q2 * temp);
         }
 
         inFile.read((char*) &temp, sizeof(temp));
-        outputBias = std::round(128 * 128 * temp);
+        outputBias = std::round(Q1 * Q1 * Q2 * temp);
     }
 };
