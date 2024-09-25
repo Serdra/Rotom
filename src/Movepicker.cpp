@@ -4,16 +4,15 @@ int SEScore[] = {0, 36, 72, 108};
 int targetScore[] = {0, 6, 12, 18, 24, 30};
 int attackerScore[] = {5, 4, 3, 2, 1, 0};
 
-int TTScore = 18'000;
-int KillerScore = 2'500;
+int16_t TTScore = 18'000;
+int16_t KillerScore = 2'500;
 int16_t MaxHistory = 2'000;
 
 struct History {
     int16_t score[2][64][64] = {0};
 
-    void update(chess::Color stm, chess::Move move, int16_t bonus) {;
-        score[(int)stm][move.from()][move.to()] += bonus;
-        score[(int)stm][move.from()][move.to()] = std::min(score[(int)stm][move.from()][move.to()], MaxHistory);
+    void update(chess::Color stm, chess::Move move, int16_t bonus) {
+        score[(int)stm][move.from()][move.to()] += bonus - score[(int)stm][move.from()][move.to()] * abs(bonus) / MaxHistory;
     }
 };
 

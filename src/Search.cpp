@@ -204,6 +204,11 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         if(alpha >= beta) {
             if(position.at(move.to()) == chess::Piece::None) {
                 Hist.update(position.sideToMove(), move, depth * depth);
+
+                for(int i = 0; i < moves.curr - 1; i++) {
+                    if(position.at(moves.moves[i].to()) == chess::Piece::None)
+                        Hist.update(position.sideToMove(), moves.moves[i], -depth * depth);
+                }
                 if(move != stack[ply].killers[0]) stack[ply].killers[1] = stack[ply].killers[0];
                 stack[ply].killers[0] = move;
             }

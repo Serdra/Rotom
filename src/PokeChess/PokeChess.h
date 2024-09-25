@@ -251,7 +251,7 @@ constexpr Piece charToPiece(char c) {
 
 struct Move {
     uint16_t data = 0;
-    uint16_t score = 0;
+    int16_t score = 0;
 
     Move() {}
 
