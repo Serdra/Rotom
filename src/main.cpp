@@ -122,6 +122,26 @@ int main() {
         for(int i = 0; i < numThreads; i++) {
             threads[i].join();
         }
+    } 
+    if (input == "selfplay") {
+        printSearchUpdates = false;
+        int moveTime = 300'000;
+        TransTable TT(1024);
+        History Hist;
+
+        std::string startingFen;
+
+        std::cout << "Enter the starting fen: ";
+        std::getline(std::cin, startingFen);
+
+        chess::Board position(startingFen, false);
+
+        while(position.isGameOver() == chess::GameResult::NONE) {
+            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime * 0.75, moveTime * 1.2, TT, Hist);
+            std::cout << "bestmove " << result.first << " eval " << result.second << std::endl;
+            position.makeMove(result.first);
+            std::cout << position << std::endl << std::endl << std::endl;
+        }
     } else {
         chess::Board pos("rmnmbm1kmbmnmrm/pmpmpmpmpmpmpmpm/8/8/8/8/PmPmPmPmPmPmPmPm/RmNmBmQmKmBmNmRm w - - 0 1 -", false);
         nnue::Accumulator acc;
