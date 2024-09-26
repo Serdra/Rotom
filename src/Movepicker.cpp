@@ -6,8 +6,8 @@ int attackerScore[] = {5, 4, 3, 2, 1, 0};
 
 int16_t TTScore = 18'000;
 int16_t KillerScore = 2'500;
-int16_t MaxHistory = 1'000;
-int16_t MaxContHistory = 1'400;
+int16_t MaxHistory = 1'500;
+int16_t MaxContHistory = 900;
 
 struct History {
     int16_t score[2][64][64] = {0};
@@ -48,7 +48,7 @@ struct ContHistory {
         for(int i = 0; i < 2; i++) {
             for(int j = 0; j < 6; j++) {
                 for(int k = 0; k < 64; k++) {
-                    for(int l = 0; i < 6; l++) {
+                    for(int l = 0; l < 6; l++) {
                         for(int m = 0; m < 6; m++) {
                             score[i][j][k][l][m] /= 10;
                         }
@@ -62,7 +62,7 @@ struct ContHistory {
         for(int i = 0; i < 2; i++) {
             for(int j = 0; j < 6; j++) {
                 for(int k = 0; k < 64; k++) {
-                    for(int l = 0; i < 6; l++) {
+                    for(int l = 0; l < 6; l++) {
                         for(int m = 0; m < 6; m++) {
                             score[i][j][k][l][m] = 0;
                         }
@@ -73,6 +73,18 @@ struct ContHistory {
     }
 };
 
+void updateHistories(History &Hist, ContHistory &ContHist, chess::Board &position, chess::Move move, int prevPiece, int prevTarget, int16_t bonus) {
+    int16_t score = Hist.score[(int)position.sideToMove()][move.from()][move.to()] + 
+            ContHist.score[(int)position.sideToMove()][prevPiece][prevTarget][(int)position.at(move.from()) % 6][move.to()];
+    int16_t update = bonus - score * abs(bonus) / MaxHistory;
+
+    Hist.score[(int)position.sideToMove()][move.from()][move.to()] += update;
+    ContHist.score[(int)position.sideToMove()][prevPiece][prevTarget][(int)position.at(move.from()) % 6][move.to()] += update;
+}
+
+void updateHistories(History &Hist, chess::Board &position, chess::Move move, int16_t bonus) {
+    Hist.score[(int)position.sideToMove()][move.from()][move.to()] += bonus - Hist.score[(int)position.sideToMove()][move.from()][move.to()] * abs(bonus) / MaxHistory;
+}
 int scoreCapture(chess::Move move, chess::Board &position) {
     return 
         attackerScore[(int)position.at(move.from()) % 6] + 
