@@ -109,7 +109,7 @@ int main() {
     if (input == "datagen") {
         printSearchUpdates = false;
 
-        DataWriter writer("Iteration1_16.bin");
+        DataWriter writer("Iteration0_32_1.bin");
         std::mutex mtx;
         int interval = 1;
         int numThreads = 8;

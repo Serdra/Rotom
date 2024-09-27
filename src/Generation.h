@@ -1,7 +1,7 @@
 #pragma once
 #include "includes.h"
 
-const int NUM_STARTING_MOVES = 6;
+const int NUM_STARTING_MOVES = 7;
 const int SOFT_NODES = 35000;
 const int HARD_NODES = 70000;
 
