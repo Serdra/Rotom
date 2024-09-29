@@ -65,17 +65,29 @@ namespace nnue {
 
             if(isWhite) {
                 for(int i = 0; i < size; i++) {
-                    value += screlu(white[i]) * outputWeights[i];
+                    const int16_t input = white[i];
+                    const int16_t weight = outputWeights[i];
+                    const int16_t clipped = std::clamp(input, (int16_t)0, (int16_t)Q1);
+                    value += (int16_t)(clipped * clipped) * weight;
                 }
                 for(int i = 0; i < size; i++) {
-                    value += screlu(black[i]) * outputWeights[size + i];
+                    const int16_t input = black[i];
+                    const int16_t weight = outputWeights[size + i];
+                    const int16_t clipped = std::clamp(input, (int16_t)0, (int16_t)Q1);
+                    value += (int16_t)(clipped * clipped) * weight;
                 }
             } else {
                 for(int i = 0; i < size; i++) {
-                    value += screlu(black[i]) * outputWeights[i];
+                    const int16_t input = black[i];
+                    const int16_t weight = outputWeights[i];
+                    const int16_t clipped = std::clamp(input, (int16_t)0, (int16_t)Q1);
+                    value += (int16_t)(clipped * clipped) * weight;
                 }
                 for(int i = 0; i < size; i++) {
-                    value += screlu(white[i]) * outputWeights[size + i];
+                    const int16_t input = white[i];
+                    const int16_t weight = outputWeights[size + i];
+                    const int16_t clipped = std::clamp(input, (int16_t)0, (int16_t)Q1);
+                    value += (int16_t)(clipped * clipped) * weight;
                 }
             }
             // Careful order of operation to not lose precision or overflow
