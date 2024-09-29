@@ -44,3 +44,11 @@ Score of Rotom-Dev vs Rotom-Master: 3842 - 3599 - 1068 [0.514] 8509
 9.92 +/- 6.90
 SPRT: llr 2.96, lbound -2.94, ubound 2.94
 ```
+
+
+0.15.1 Faster Screlu
+```
+Score of Rotom-Dev vs Rotom-Master: 3593 - 3358 - 1297 [0.514] 8248
+9.90 +/- 6.88
+SPRT: llr 2.95, lbound -2.94, ubound 2.94
+```
