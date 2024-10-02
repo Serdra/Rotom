@@ -148,7 +148,7 @@ void generateBook(std::mutex &mtx, xorshift rng) {
             }
             if(pos.isGameOver() != chess::GameResult::NONE) continue;
             std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1750, 2250, TT, Hist);
-            if(abs(result.second) < 150) {
+            if(abs(result.second) < 80) {
                 mtx.lock();
                 std::cout << pos.getFen() << std::endl;
                 mtx.unlock();
