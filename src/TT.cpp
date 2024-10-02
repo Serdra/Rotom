@@ -33,4 +33,10 @@ struct TransTable {
     void insert(TTEntry entry) {
         table[entry.hash % numEntries] = entry;
     }
+
+    void clear() {
+        for(int i = 0; i < numEntries; i++) {
+            table[i] = TTEntry();
+        }
+    }
 };

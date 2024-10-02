@@ -131,3 +131,29 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
         pos.makeMove(searchResult.first);
     }
 }
+
+void generateBook(std::mutex &mtx, xorshift rng) {
+    TransTable TT(128);
+    History Hist;
+    while(true) {
+        int randomMoves = (rng.rand() % 7) + 4;
+
+        while(true) {
+            TT.clear();
+            chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
+            for(int i = 0; i < randomMoves && pos.isGameOver() == chess::GameResult::NONE; i++) {
+                chess::Movelist moves;
+                chess::legalmoves(moves, pos);
+                pos.makeMove(moves[rng.rand() % moves.size()]);
+            }
+            if(pos.isGameOver() != chess::GameResult::NONE) continue;
+            std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1750, 2250, TT, Hist);
+            if(abs(result.second) < 150) {
+                mtx.lock();
+                std::cout << pos.getFen() << std::endl;
+                mtx.unlock();
+                break;
+            }
+        }
+    }
+}

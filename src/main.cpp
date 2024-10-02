@@ -8,26 +8,17 @@ int main() {
 
     if (input == "ugi") UGI();
     if (input == "book") {
+        int seed = rand();
         printSearchUpdates = false;
-        TransTable TT(128);
-        History Hist;
-        while(true) {
-            int randomMoves = (rand() % 5) + 6;
-            while(true) {
-                chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
-                for(int i = 0; i < randomMoves && pos.isGameOver() == chess::GameResult::NONE; i++) {
-                    chess::Movelist moves;
-                    chess::legalmoves(moves, pos);
-                    pos.makeMove(moves[rand() % moves.size()]);
-                }
-                if(pos.isGameOver() == chess::GameResult::NONE) {
-                    std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 750, 1250, TT, Hist);
-                    if(abs(result.second) < 150) {
-                        std::cout << pos.getFen() << std::endl;
-                        break;
-                    }
-                }
-            }
+        std::mutex mtx;
+        int numThreads = 8;
+
+        std::vector<std::thread> threads;
+        for(int i = 0; i < numThreads; i++) {
+            threads.push_back(std::thread(generateBook, std::ref(mtx), xorshift(seed + i)));
+        }
+        for(int i = 0; i < numThreads; i++) {
+            threads[i].join();
         }
     }
     if (input == "analyze") {
@@ -107,9 +98,10 @@ int main() {
         }
     }
     if (input == "datagen") {
+        int seed = rand();
         printSearchUpdates = false;
 
-        DataWriter writer("Iteration0_32_1.bin");
+        DataWriter writer("Iteration0_32_3.bin");
         std::mutex mtx;
         int interval = 1;
         int numThreads = 8;
@@ -117,7 +109,7 @@ int main() {
 
         std::vector<std::thread> threads;
         for(int i = 0; i < numThreads; i++) {
-            threads.push_back(std::thread(generateData, std::ref(writer), std::ref(mtx), std::ref(interval), std::ref(wdl), xorshift(0+i)));
+            threads.push_back(std::thread(generateData, std::ref(writer), std::ref(mtx), std::ref(interval), std::ref(wdl), xorshift(seed+i)));
         }
         for(int i = 0; i < numThreads; i++) {
             threads[i].join();
