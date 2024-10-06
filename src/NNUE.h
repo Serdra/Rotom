@@ -12,7 +12,7 @@ namespace nnue {
     int16_t hiddenBias[size];
 
     int16_t outputWeights[size * 2];
-    int16_t outputBias;
+    int32_t outputBias;
 
     struct Accumulator {
         int16_t white[size];

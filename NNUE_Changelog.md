@@ -68,3 +68,11 @@ Score of Rotom-Dev vs Rotom-Master: 1594 - 1387 - 421 [0.530] 3402
 21.17 +/- 10.93
 SPRT: llr 2.96, lbound -2.94, ubound 2.94
 ```
+
+
+0.15.2 Fixed output bias
+```
+Score of Rotom-Dev vs Rotom-Master: 833 - 642 - 250 [0.555] 1725
+38.63 +/- 15.23
+SPRT: llr 2.95, lbound -2.94, ubound 2.94
+```
