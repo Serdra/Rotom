@@ -60,6 +60,7 @@ void UGI() {
 
     TransTable TT(hashSize);
     History Hist;
+    ContHistory ContHist;
     chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
     nnue::init(nnue_path);
 
@@ -95,13 +96,8 @@ void UGI() {
         }
         
         else if(split[0] == "uginewgame") {
-            for(int i = 0; i < 2; i++) {
-                for(int j = 0; j < 64; j++) {
-                    for(int k = 0; k < 64; k++) {
-                        Hist.score[i][j][k] = 0;
-                    }
-                }
-            }
+            Hist.clear();
+            ContHist.clear();
         }
         
         else if (split[0] == "query") {
@@ -175,17 +171,17 @@ void UGI() {
 
             std::pair<chess::Move, int> bestMove;
 
-            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0, 0, TT, Hist);
+            if(stopType == StopType::Infinite) bestMove = IterativeDeepening(pos, stopType, 0, 0, TT, Hist, ContHist);
             if(stopType == StopType::Time) {
                 if(mTime == -1) {
                     int ttm = std::min(timeRemaining / 2, (timeRemaining / 30) + incTime);
-                    bestMove = IterativeDeepening(pos, stopType, ttm * SOFT_LIMIT_MULT, ttm * HARD_LIMIT_MULT, TT, Hist);
+                    bestMove = IterativeDeepening(pos, stopType, ttm * SOFT_LIMIT_MULT, ttm * HARD_LIMIT_MULT, TT, Hist, ContHist);
                 } else {
-                    bestMove = IterativeDeepening(pos, stopType, mTime, mTime, TT, Hist);
+                    bestMove = IterativeDeepening(pos, stopType, mTime, mTime, TT, Hist, ContHist);
                 }
             }
-            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes, nodes, TT, Hist);
-            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth, depth, TT, Hist);
+            if(stopType == StopType::Nodes) bestMove = IterativeDeepening(pos, stopType, nodes, nodes, TT, Hist, ContHist);
+            if(stopType == StopType::Depth) bestMove = IterativeDeepening(pos, stopType, depth, depth, TT, Hist, ContHist);
 
             std::cout << "bestmove " << bestMove.first << std::endl;
         }

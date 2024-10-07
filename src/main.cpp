@@ -25,6 +25,7 @@ int main() {
         printSearchUpdates = false;
         TransTable TT(256);
         History Hist;
+        ContHistory ContHist;
 
         std::string startingFen;
         std::string moveStrings;
@@ -39,7 +40,7 @@ int main() {
         std::vector<std::string> moves = chess::splitString(moveStrings, ' ');
 
         int moveTime = 1000;
-        std::pair<chess::Move, int> prevResult = IterativeDeepening(position, StopType::Time, moveTime, moveTime*2, TT, Hist);
+        std::pair<chess::Move, int> prevResult = IterativeDeepening(position, StopType::Time, moveTime, moveTime*2, TT, Hist, ContHist);
 
         // Validate moves
         for(int i = 0; i < moves.size() && position.isGameOver() == chess::GameResult::NONE; i++) {
@@ -62,7 +63,7 @@ int main() {
         position = chess::Board(startingFen, false);
         for(int i = 0; i < moves.size() && position.isGameOver() == chess::GameResult::NONE; i++) {
             position.makeMove(chess::fromUGI(position, moves[i]));
-            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime, moveTime * 2, TT, Hist);
+            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime, moveTime * 2, TT, Hist, ContHist);
             if(-result.second < (prevResult.second - 80) && (position.getSE() == 64) && prevResult.first != chess::fromUGI(position, moves[i])) {
                 std::cout << "Potential blunder " << moves[i] << " best move was " << prevResult.first << " loss " << prevResult.second + result.second << std::endl;
             }
@@ -120,6 +121,7 @@ int main() {
         int moveTime = 300'000;
         TransTable TT(1024);
         History Hist;
+        ContHistory ContHist;
 
         std::string startingFen;
 
@@ -129,7 +131,7 @@ int main() {
         chess::Board position(startingFen, false);
 
         while(position.isGameOver() == chess::GameResult::NONE) {
-            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime * 0.75, moveTime * 1.2, TT, Hist);
+            std::pair<chess::Move, int> result = IterativeDeepening(position, StopType::Time, moveTime * 0.75, moveTime * 1.2, TT, Hist, ContHist);
             std::cout << "bestmove " << result.first << " eval " << result.second << std::endl;
             position.makeMove(result.first);
             std::cout << position << std::endl << std::endl << std::endl;

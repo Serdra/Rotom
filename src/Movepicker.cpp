@@ -7,12 +7,65 @@ int attackerScore[] = {5, 4, 3, 2, 1, 0};
 int16_t TTScore = 18'000;
 int16_t KillerScore = 2'500;
 int16_t MaxHistory = 2'000;
+int16_t MaxContHistory = 1'000;
 
 struct History {
     int16_t score[2][64][64] = {0};
 
     void update(chess::Color stm, chess::Move move, int16_t bonus) {
         score[(int)stm][move.from()][move.to()] += bonus - score[(int)stm][move.from()][move.to()] * abs(bonus) / MaxHistory;
+    }
+
+    void gravity() {
+        for(int i = 0; i < 2; i++) {
+            for(int j = 0; j < 64; j++) {
+                for(int k = 0; k < 64; k++) {
+                    score[i][j][k] /= 10;
+                }
+            }
+        }
+    }
+    void clear() {
+        for(int i = 0; i < 2; i++) {
+            for(int j = 0; j < 64; j++) {
+                for(int k = 0; k < 64; k++) {
+                    score[i][j][k] = 0;
+                }
+            }
+        }
+    }
+};
+
+struct ContHistory {
+    int16_t score[2][6][64][6][64] = {0};
+    void update(chess::Color stm, int prevPiece, int prevTarget, int piece, int target, int16_t bonus) {
+        score[(int)stm][prevPiece][prevTarget][piece][target] += bonus - score[(int)stm][prevPiece][prevTarget][piece][target] * abs(bonus) / MaxContHistory;
+    }
+    void gravity() {
+        for(int i = 0; i < 2; i++) {
+            for(int j = 0; j < 6; j++) {
+                for(int k = 0; k < 64; k++) {
+                    for(int l = 0; l < 6; l++) {
+                        for(int m = 0; m < 64; m++) {
+                            score[i][j][k][l][m] /= 10;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    void clear() {
+        for(int i = 0; i < 2; i++) {
+            for(int j = 0; j < 6; j++) {
+                for(int k = 0; k < 64; k++) {
+                    for(int l = 0; l < 6; l++) {
+                        for(int m = 0; m < 64; m++) {
+                            score[i][j][k][l][m] = 0;
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 
@@ -35,13 +88,16 @@ struct MovePicker {
         }
     }
 
-    MovePicker(chess::Board &b, chess::Move ttMove, chess::Move killers[2], History &Hist) {
+    MovePicker(chess::Board &b, chess::Move ttMove, chess::Move killers[2], History &Hist, ContHistory &ContHist, int piece, int square) {
         chess::legalmoves(moves, b);
         for(int i = 0; i < moves.size(); i++) {
             if(moves[i] == ttMove) moves[i].score = TTScore;
             else if(moves[i] == killers[0]) moves[i].score = KillerScore;
             else if(moves[i] == killers[1]) moves[i].score = KillerScore;
-            else if(b.at(moves[i].to()) == chess::Piece::None) moves[i].score = Hist.score[(int)b.sideToMove()][moves[i].from()][moves[i].to()];
+                        else if(b.at(moves[i].to()) == chess::Piece::None) {
+                moves[i].score = Hist.score[(int)b.sideToMove()][moves[i].from()][moves[i].to()];
+                moves[i].score += ContHist.score[(int)b.sideToMove()][piece][square][(int)b.at(moves[i].from()) % 6][moves[i].to()];
+            }
             else moves[i].score = 50 * scoreCapture(moves[i], b);
         }
     }

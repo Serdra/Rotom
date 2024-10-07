@@ -1,15 +1,10 @@
 #include "includes.h"
 
-std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int softStopValue, int hardStopValue, TransTable &TT, History &Hist) {
+std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType stop, int softStopValue, int hardStopValue, TransTable &TT, History &Hist, ContHistory &ContHist) {
     auto start = std::chrono::high_resolution_clock::now();
 
-    for(int i = 0; i < 2; i++) {
-        for(int j = 0; j < 64; j++) {
-            for(int k = 0; k < 64; k++) {
-                Hist.score[i][j][k] /= 10;
-            }
-        }
-    }
+    Hist.gravity();
+    ContHist.gravity();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> hardTime, softTime;
     softTime = start + std::chrono::milliseconds(softStopValue);
@@ -35,11 +30,11 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
         fromScratch(stack[0].acc, position);
 
         if(depth == 1) 
-            result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
+            result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, ContHist, nodes);
         else {
-            result = Negamax(position, depth, evaluation - ASPIRATION_WINDOW, evaluation + ASPIRATION_WINDOW, 0, stack, settings, TT, Hist, nodes);
+            result = Negamax(position, depth, evaluation - ASPIRATION_WINDOW, evaluation + ASPIRATION_WINDOW, 0, stack, settings, TT, Hist, ContHist, nodes);
             if(result <= (evaluation - ASPIRATION_WINDOW) || result >= (evaluation + ASPIRATION_WINDOW)) {
-                result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, nodes);
+                result = Negamax(position, depth, -INF, +INF, 0, stack, settings, TT, Hist, ContHist, nodes);
             }
         }
 
@@ -73,7 +68,7 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
     return {previousBestMove, evaluation};
 }
 
-int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, History &Hist, uint64_t &nodes) {
+int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, History &Hist, ContHistory &ContHist, uint64_t &nodes) {
     // Step one is to check if the game is over. This is fast and perfectly accurate so we do it first
     if(position.isGameOver() != chess::GameResult::NONE) {
         if(position.isGameOver() == chess::GameResult::WIN) return MATE - ply;
@@ -118,6 +113,9 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     if(!stack[ply].isPV && !position.inCheck() && static_eval - RFP_BOUND * depth >= beta) return static_eval - RFP_BOUND * depth;
 
     if(!stack[ply].isPV && stack[ply].canDoNullMove && depth > 2 && !position.inCheck() && static_eval >= beta) {
+        stack[ply].piece = 0;
+        stack[ply].square = 0;
+
         stack[ply+1].acc = stack[ply].acc;
         stack[ply+1].canDoNullMove = false;
         stack[ply+1].isPV = false;
@@ -126,7 +124,7 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
         newPosition.makeMove(chess::Move(0, 0));
         nodes++;
 
-        int value = -Negamax(newPosition, depth - 3, -beta, -beta + 1, ply + 1, stack, settings, TT, Hist, nodes);
+        int value = -Negamax(newPosition, depth - 3, -beta, -beta + 1, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
         stack[ply].pv.moves.clear();
         stack[ply+1].pv.moves.clear();
         stack[ply+1].canDoNullMove = true;
@@ -136,7 +134,9 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
     }
 
     // Searches each move in turn
-    MovePicker moves(position, entry.bestMove, stack[ply].killers, Hist);
+    MovePicker moves(
+        position, entry.bestMove, stack[ply].killers, Hist, ContHist, 
+        (ply > 0 ? stack[ply-1].piece : 0), (ply > 0 ? stack[ply-1].square : 0));
     chess::Move move;
 
     int result;
@@ -145,6 +145,10 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
 
     while(moves.next(move, position)) {
         if(depth <= 3 && moves.curr > depth*10) break;
+
+        stack[ply].piece = (int)position.at(move.from()) % 6;
+        stack[ply].square = move.to();
+
         stack[ply+1].pv.moves.clear();
         stack[ply+1].acc = stack[ply].acc;
         // I prefer copy-make to make-unmake
@@ -160,30 +164,30 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
             stack[ply+1].isPV = true;
 
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
             } else {
-                result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, Hist, nodes);
+                result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
             }
         } else {
             stack[ply+1].isPV = false;
             int reduce = reduction(depth, moves.curr, stack[ply].isPV, position.at(move.to()) != chess::Piece::None, position.inCheck());
             if(newPosition.sideToMove() != position.sideToMove()) {
-                result = -Negamax(newPosition, depth - 1 - reduce, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                result = -Negamax(newPosition, depth - 1 - reduce, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
             } else {
-                result = Negamax(newPosition, depth - reduce, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
+                result = Negamax(newPosition, depth - reduce, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {
-                    result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                    result = -Negamax(newPosition, depth - 1, -alpha - 1, -alpha, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
                 } else {
-                    result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, nodes);
+                    result = Negamax(newPosition, depth, alpha, alpha+1, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
                 }
             }
             if(result > alpha && result < beta) {
                 if(newPosition.sideToMove() != position.sideToMove()) {
-                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, Hist, nodes);
+                    result = -Negamax(newPosition, depth - 1, -beta, -alpha, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
                 } else {
-                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, Hist, nodes);
+                    result = Negamax(newPosition, depth, alpha, beta, ply + 1, stack, settings, TT, Hist, ContHist, nodes);
                 }
             }
         }
@@ -206,8 +210,10 @@ int Negamax(chess::Board &position, int depth, int alpha, int beta, int ply, Sta
                 Hist.update(position.sideToMove(), move, depth * depth);
 
                 for(int i = 0; i < moves.curr - 1; i++) {
-                    if(position.at(moves.moves[i].to()) == chess::Piece::None)
+                    if(position.at(moves.moves[i].to()) == chess::Piece::None) {
                         Hist.update(position.sideToMove(), moves.moves[i], -depth * depth);
+                        if(ply > 0) ContHist.update(position.sideToMove(), stack[ply-1].piece, stack[ply-1].square, (int)position.at(moves.moves[i].from()) % 6, moves.moves[i].to(), -depth * depth);
+                    }
                 }
                 if(move != stack[ply].killers[0]) stack[ply].killers[1] = stack[ply].killers[0];
                 stack[ply].killers[0] = move;
