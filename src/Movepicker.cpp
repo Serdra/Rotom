@@ -6,8 +6,8 @@ int attackerScore[] = {5, 4, 3, 2, 1, 0};
 
 int16_t TTScore = 18'000;
 int16_t KillerScore = 2'500;
-int16_t MaxHistory = 2'000;
-int16_t MaxContHistory = 1'000;
+int16_t MaxHistory = 1'500;
+int16_t MaxContHistory = 900;
 
 struct History {
     int16_t score[2][64][64] = {0};
