@@ -4,10 +4,10 @@ int SEScore[] = {0, 36, 72, 108};
 int targetScore[] = {0, 6, 12, 18, 24, 30};
 int attackerScore[] = {5, 4, 3, 2, 1, 0};
 
-int16_t TTScore = 18'000;
-int16_t KillerScore = 2'500;
-int16_t MaxHistory = 1'500;
-int16_t MaxContHistory = 900;
+int16_t TTScore = 30'000;
+int16_t KillerScore = 4'000;
+int16_t MaxHistory = 3'000;
+int16_t MaxContHistory = 2'000;
 
 struct History {
     int16_t score[2][64][64] = {0};
@@ -98,7 +98,7 @@ struct MovePicker {
                 moves[i].score = Hist.score[(int)b.sideToMove()][moves[i].from()][moves[i].to()];
                 moves[i].score += ContHist.score[(int)b.sideToMove()][piece][square][(int)b.at(moves[i].from()) % 6][moves[i].to()];
             }
-            else moves[i].score = 50 * scoreCapture(moves[i], b);
+            else moves[i].score = KillerScore + 20 * scoreCapture(moves[i], b);
         }
     }
 
