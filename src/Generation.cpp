@@ -162,3 +162,49 @@ void generateBook(std::mutex &mtx, xorshift rng) {
         }
     }
 }
+
+void generateTeamData(std::mutex &mtx, xorshift rng, int soft_nodes, int hard_nodes) {
+    TransTable TT(32);
+    History Hist;
+    ContHistory ContHist;
+
+    std::vector<std::pair<chess::Move, int>> gameData;
+    chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
+    std::string startingFen = pos.getFen();
+
+    // TODO: Add adjudication?
+    while(true) {
+        if(pos.isGameOver() != chess::GameResult::NONE) {
+            std::string result = "1/2-1/2";
+
+            if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::White) result = "1-0";
+            if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::Black) result = "0-1";
+            if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::White) result = "0-1";
+            if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::Black) result = "1-0";
+
+            mtx.lock();
+            std::cout << result;
+            std::cout << " | " << startingFen << " | ";
+            for(auto pair : gameData) {
+                std::cout << pair.first << " " << pair.second << " ";
+            }
+            std::cout << std::endl;
+            mtx.unlock();
+
+            gameData.clear();
+            ContHist.clear();
+            Hist.clear();
+            TT.clear();
+
+            pos = chess::Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
+            startingFen = pos.getFen();
+        }
+
+        std::pair<chess::Move, int> searchResult = IterativeDeepening(pos, StopType::Nodes, soft_nodes, hard_nodes, TT, Hist, ContHist);
+        if(pos.sideToMove() == chess::Color::Black) {
+            searchResult.second *= -1;
+        }
+        gameData.push_back(searchResult);
+        pos.makeMove(searchResult.first);
+    }
+}

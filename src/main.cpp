@@ -136,6 +136,21 @@ int main() {
             position.makeMove(result.first);
             std::cout << position << std::endl << std::endl << std::endl;
         }
+    }
+    if(input == "teams") {
+        int seed = rand();
+        printSearchUpdates = false;
+
+        std::mutex mtx;
+        int numThreads = 8;
+
+        std::vector<std::thread> threads;
+        for(int i = 0; i < numThreads; i++) {
+            threads.push_back(std::thread(generateTeamData, std::ref(mtx), xorshift(seed+i), 650000, 1000000));
+        }
+        for(int i = 0; i < numThreads; i++) {
+            threads[i].join();
+        }
     } else {
         chess::Board pos("rmnmbm1kmbmnmrm/pmpmpmpmpmpmpmpm/8/8/8/8/PmPmPmPmPmPmPmPm/RmNmBmQmKmBmNmRm w - - 0 1 -", false);
         nnue::Accumulator acc;
