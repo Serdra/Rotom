@@ -59,6 +59,7 @@ PackedBoard reversePackBoard(chess::Board &position) {
 void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, xorshift rng) {
     TransTable table(16);
     History hist;
+    ContHistory contHist;
 
     auto start = std::chrono::high_resolution_clock::now();
     std::vector<PackedBoard> gameData;
@@ -66,10 +67,10 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
 
     chess::Board pos = generateStartingPosition(rng);
     std::pair<chess::Move, int> searchResult;
-    searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+    searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
     while(abs(searchResult.second) > 160) {
         chess::Board pos = generateStartingPosition(rng);
-        searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+        searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
     }
 
 
@@ -108,16 +109,19 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
             mtx.unlock();
 
             gameData.clear();
+            contHist.clear();
+            hist.clear();
 
             pos = generateStartingPosition(rng);
-            searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+            searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
             while(abs(searchResult.second) > 160) {
                 chess::Board pos = generateStartingPosition(rng);
-                searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+                searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
             }
+
         }
 
-        searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist);
+        searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
         PackedBoard pb = packBoard(pos);
         if(abs(searchResult.second) < 10000 && pos.at(searchResult.first.to()) == chess::Piece::None)  {
             pb.eval = searchResult.second;
@@ -135,6 +139,7 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
 void generateBook(std::mutex &mtx, xorshift rng) {
     TransTable TT(128);
     History Hist;
+    ContHistory ContHist;
     while(true) {
         int randomMoves = (rng.rand() % 7) + 4;
 
@@ -147,7 +152,7 @@ void generateBook(std::mutex &mtx, xorshift rng) {
                 pos.makeMove(moves[rng.rand() % moves.size()]);
             }
             if(pos.isGameOver() != chess::GameResult::NONE) continue;
-            std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1750, 2250, TT, Hist);
+            std::pair<chess::Move, int> result = IterativeDeepening(pos, StopType::Time, 1750, 2250, TT, Hist, ContHist);
             if(abs(result.second) < 80) {
                 mtx.lock();
                 std::cout << pos.getFen() << std::endl;

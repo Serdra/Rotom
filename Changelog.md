@@ -184,3 +184,11 @@ Score of Rotom-Dev vs Rotom-Master: 2072 - 1862 - 732 [0.523] 4666
 15.65 +/- 9.15
 SPRT: llr 2.95, lbound -2.94, ubound 2.94
 ```
+
+
+0.16.0 1 Ply Conthist
+```
+Score of Rotom-Dev vs Rotom-Master: 2762 - 2543 - 1177 [0.517] 6482
+11.74 +/- 7.65
+SPRT: llr 2.96, lbound -2.94, ubound 2.94
+```

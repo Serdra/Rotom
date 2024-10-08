@@ -48,16 +48,18 @@ struct Stack {
     bool isPV = true;
     bool canDoNullMove = true;
     PV pv;
+    int piece; // Piece and square moved to
+    int square;
     chess::Move killers[2];
     nnue::Accumulator acc;
 };
 
 std::pair<chess::Move, int> IterativeDeepening(
-    chess::Board position, StopType stop, int softStopValue, int hardStopValue, TransTable &TT, History &Hist
+    chess::Board position, StopType stop, int softStopValue, int hardStopValue, TransTable &TT, History &Hist, ContHistory &ContHist
 );
 
 int Negamax(
-    chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, History &Hist, uint64_t &nodes
+    chess::Board &position, int depth, int alpha, int beta, int ply, Stack* stack, SearchSettings &settings, TransTable &TT, History &Hist, ContHistory &ContHist, uint64_t &nodes
 );
 
 int QSearch(
