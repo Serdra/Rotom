@@ -102,7 +102,7 @@ int main() {
         int seed = rand();
         printSearchUpdates = false;
 
-        DataWriter writer("Iteration0_32_3.bin");
+        DataWriter writer("Iteration1_32.bin");
         std::mutex mtx;
         int interval = 1;
         int numThreads = 8;

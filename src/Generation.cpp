@@ -8,10 +8,11 @@ chess::Bitboard flip(chess::Bitboard x) {
 } 
 
 chess::Board generateStartingPosition(xorshift &rng) {
+    int randomMoves = (rng.rand() % 11);
     while(true) {
         chess::Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
 
-        for(int i = 0; i < NUM_STARTING_MOVES && b.isGameOver() == chess::GameResult::NONE; i++) {
+        for(int i = 0; i < randomMoves && b.isGameOver() == chess::GameResult::NONE; i++) {
             chess::Movelist moves;
             chess::legalmoves(moves, b);
             b.makeMove(moves[rng.rand() % moves.size()]);
@@ -57,7 +58,7 @@ PackedBoard reversePackBoard(chess::Board &position) {
 }
 
 void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, xorshift rng) {
-    TransTable table(16);
+    TransTable table(2);
     History hist;
     ContHistory contHist;
 
@@ -68,7 +69,7 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
     chess::Board pos = generateStartingPosition(rng);
     std::pair<chess::Move, int> searchResult;
     searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
-    while(abs(searchResult.second) > 160) {
+    while(abs(searchResult.second) > 200) {
         chess::Board pos = generateStartingPosition(rng);
         searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
     }
@@ -76,7 +77,7 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
 
     // TODO: Add adjudication?
     while(true) {
-        if(pos.isGameOver() != chess::GameResult::NONE || pos.fullMoveClock() > 200) {
+        if(pos.isGameOver() != chess::GameResult::NONE || pos.fullMoveClock() > 400) {
             int8_t result = 0;
 
             if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::White) result =  1;
@@ -111,10 +112,11 @@ void generateData(DataWriter &writer, std::mutex &mtx, int &interval, WDL &wdl, 
             gameData.clear();
             contHist.clear();
             hist.clear();
+            table.clear();
 
             pos = generateStartingPosition(rng);
             searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
-            while(abs(searchResult.second) > 160) {
+            while(abs(searchResult.second) > 200) {
                 chess::Board pos = generateStartingPosition(rng);
                 searchResult = IterativeDeepening(pos, StopType::Nodes, SOFT_NODES, HARD_NODES, table, hist, contHist);
             }
