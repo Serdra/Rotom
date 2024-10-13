@@ -166,7 +166,7 @@ void generateBook(std::mutex &mtx, xorshift rng) {
 }
 
 void generateTeamData(std::mutex &mtx, xorshift rng, int soft_nodes, int hard_nodes) {
-    TransTable TT(32);
+    TransTable TT(16);
     History Hist;
     ContHistory ContHist;
 

@@ -146,7 +146,7 @@ int main() {
 
         std::vector<std::thread> threads;
         for(int i = 0; i < numThreads; i++) {
-            threads.push_back(std::thread(generateTeamData, std::ref(mtx), xorshift(seed+i), 650000, 1000000));
+            threads.push_back(std::thread(generateTeamData, std::ref(mtx), xorshift(seed+i), 750000, 1200000));
         }
         for(int i = 0; i < numThreads; i++) {
             threads[i].join();
