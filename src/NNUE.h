@@ -4,7 +4,7 @@
 int pieceSwap[12] = {6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5};
 
 namespace nnue {
-    const int size = 32;
+    const int size = 64;
     const int Q1 = 181;
     const int Q2 = 255; 
 
