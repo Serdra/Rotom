@@ -173,16 +173,20 @@ void generateTeamData(std::mutex &mtx, xorshift rng, int soft_nodes, int hard_no
     std::vector<std::pair<chess::Move, int>> gameData;
     chess::Board pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
     std::string startingFen = pos.getFen();
+    std::pair<chess::Move, int> searchResult = IterativeDeepening(pos, StopType::Nodes, soft_nodes, hard_nodes, TT, Hist, ContHist);
 
     // TODO: Add adjudication?
     while(true) {
-        if(pos.isGameOver() != chess::GameResult::NONE) {
+        if(pos.isGameOver() != chess::GameResult::NONE || abs(searchResult.second) >= 500) {
             std::string result = "1/2-1/2";
 
             if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::White) result = "1-0";
-            if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::Black) result = "0-1";
-            if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::White) result = "0-1";
-            if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::Black) result = "1-0";
+            else if(pos.isGameOver() == chess::GameResult::WIN  && pos.sideToMove() == chess::Color::Black) result = "0-1";
+            else if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::White) result = "0-1";
+            else if(pos.isGameOver() == chess::GameResult::LOSE && pos.sideToMove() == chess::Color::Black) result = "1-0";
+
+            else if(searchResult.second >= 500 ) result = "1-0";
+            else if(searchResult.second <= -500) result = "0-1";
 
             mtx.lock();
             std::cout << result;
@@ -200,9 +204,10 @@ void generateTeamData(std::mutex &mtx, xorshift rng, int soft_nodes, int hard_no
 
             pos = chess::Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -", true);
             startingFen = pos.getFen();
+            searchResult = IterativeDeepening(pos, StopType::Nodes, soft_nodes, hard_nodes, TT, Hist, ContHist);
         }
 
-        std::pair<chess::Move, int> searchResult = IterativeDeepening(pos, StopType::Nodes, soft_nodes, hard_nodes, TT, Hist, ContHist);
+        searchResult = IterativeDeepening(pos, StopType::Nodes, soft_nodes, hard_nodes, TT, Hist, ContHist);
         if(pos.sideToMove() == chess::Color::Black) {
             searchResult.second *= -1;
         }
