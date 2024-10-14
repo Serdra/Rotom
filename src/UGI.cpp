@@ -98,6 +98,7 @@ void UGI() {
         else if(split[0] == "uginewgame") {
             Hist.clear();
             ContHist.clear();
+            TT.clear();
         }
         
         else if (split[0] == "query") {
