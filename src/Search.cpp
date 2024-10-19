@@ -46,7 +46,7 @@ std::pair<chess::Move, int> IterativeDeepening(chess::Board position, StopType s
                 auto elapsed = std::chrono::high_resolution_clock::now() - start;
                 int u = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
-                std::cout << "info depth " << depth << " score cp " << result;
+                std::cout << "info depth " << depth << " score cp " << (int)std::round((float)(result * 100) / SCALING_FACTOR);
                 std::cout << " time " << u << " nodes " << nodes;
                 if(u >= 2) std::cout << " nps " << (int)(nodes / (u / 1000.f));
                 std::cout << " pv ";

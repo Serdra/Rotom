@@ -1,6 +1,8 @@
 #pragma once
 #include "includes.h"
 
+const int SCALING_FACTOR = 123;
+
 const int MAX_DEPTH = 64;
 const int MAX_PLY = 256;
 const int INF = 999999;
