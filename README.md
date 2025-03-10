@@ -7,6 +7,6 @@ As of 3/10/2025, Rotom is the strongest available Pokemon Chess engine. It is fa
 
 
 ## Features
-Rotom uses a well-optimized search based on Alpha Beta pruning. Enhancements include transposition tables, move histories, and late move reductions. For the full development history of search features and their corresponding strength improvements, see #Changelog.md
+Rotom uses a well-optimized search based on Alpha Beta pruning. Enhancements include transposition tables, move histories, and late move reductions. For the full development history of search features and their corresponding strength improvements, see the [Changelog](Changelog.md)
 
-For the evaluation, Rotom uses an extremely fast and lightweight NNUE. This can evaluate several million positions per second per thread on a modern CPU, allowing Rotom to search several moves in the future. To view the history of this evaluation function, check out #NNUE_Changelog.md.
+For the evaluation, Rotom uses an extremely fast and lightweight NNUE. This can evaluate several million positions per second per thread on a modern CPU, allowing Rotom to search several moves in the future. To view the history of this evaluation function, check out the [NNUE Changelog](NNUE_Changelog.md).
